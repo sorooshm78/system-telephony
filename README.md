@@ -143,3 +143,16 @@ branch_route[MANAGE_BRANCH] {
 }
 ```
 
+## Mysql Module
+This is a module which provides MySQL connectivity for Kamailio. It implements the DB API defined in Kamailio.
+
+### Install 
+1. install mysql 
+2. setup kamailio
+in kamailio.config
+
+    Pre-Processor
+    ```
+    #!define WITH_MYSQL
+    ```
+
