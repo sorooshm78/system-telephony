@@ -156,3 +156,66 @@ in kamailio.config
     #!define WITH_MYSQL
     ```
 
+## SecFilter Module
+### Overview
+This module has been designed to offer an additional layer of security over our communications. To achieve this, the following features are available:
+
+- Blacklist to block user agents, IP addresses, countries, domains and users.
+- Whitelist to allow user agents, IP addresses, countries, domains and users.
+- Blacklist of destinations where the called number is not allowed.
+- SQL injection attacks prevention.
+
+When a function is called, it will be searched in the whitelist. If the value is not found, then the blacklist will be searched.
+
+All data will be loaded into memory when the module is started. There is an RPC reload command to update all the data from database. It is also possible to add new data to the blacklist or whitelist using other RPC commands.
+
+### Dependencies
+The following modules must be loaded before this module:
+* database -- Any db_* database module
+
+
+### Database setup
+Before running Kamailio with the secfilter module, it is necessary to setup the database table where the module will read the blacklist data from. In order to do that, if the table was not created by the installation script or you choose to install everything by yourself you can use the secfilter-create.sql SQL script in the database directories in the kamailio/scripts folder as a template. Database and table name can be set with module parameters so they can be changed, but the name of the columns must match the ones in the SQL script. You can also find the complete database documentation on the project webpage, https://www.kamailio.org/docs/db-tables/kamailio-db-devel.html.
+
+Example 1.25. Example database content - secfilter table
+```
+		...
+		+----+-----------+-----------+------------------+
+		| id | action    | type      | data             |
+		+----+-----------+-----------+------------------+
+		|  1 | 0         | 2         | 1.1.1.1          |
+		|  2 | 0         | 0         | friendly-scanner |
+		|  3 | 0         | 0         | pplsip           |
+		|  4 | 0         | 0         | sipcli           |
+		|  5 | 0         | 4         | sipvicious       |
+		|  6 | 0         | 1         | ps               |
+		|  7 | 0         | 3         | 5.56.57.58       |
+		|  8 | 1         | 0         | asterisk pbx     |
+		|  9 | 1         | 2         | sip.mydomain.com |
+		| 10 | 2         | 0         | 555123123        |
+		| 11 | 2         | 0         | 555998776        |
+		+----+-----------+-----------+------------------+
+		...
+```
+
+Action values are:
+* 0 (blacklist)
+* 1 (whitelist)
+* 2 (destination)
+
+Type values are:
+* 0 (user-agent)
+* 1 (country)
+* 2 (domain)
+* 3 (IP address)
+* 4 (user)
+
+### Parameters
+#### db_url (string)
+Database URL.
+Default value is ""
+```
+		...
+		modparam("secfilter", "db_url", "mysql://user:pass@localhost/kamailio")
+```
+
