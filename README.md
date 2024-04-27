@@ -139,6 +139,9 @@ PBX systems operate by using either VoIP (Voice Over Internet Protocol) or via a
 # Kamailio
 This tutorial collects the functions and parameters exported by Kamailio core to configuration file.
 
+## Table Sql Script
+[sql script](https://github.com/kamailio/kamailio/blob/master/utils/kamctl/mysql)
+
 ## Structure
 The structure of the kamailio.cfg can be seen as three parts:
 
@@ -443,3 +446,56 @@ Example 1.15. secf_check_dst usage
 		}
 		...
 ```
+
+## Dispatcher Module
+### Params
+#### ds_ping_interval (int)
+With this parameter you can define the interval for sending a request to a gateway marked as inactive upon a failed request routing to it. This parameter is only used, when the TM-Module is loaded. If set to “0”, the pinging of inactive gateway is disabled.
+
+Default value is “0”.
+
+Example 1.22. Set the “ds_ping_interval” parameter
+```
+...
+modparam("dispatcher", "ds_ping_interval", 30)
+...
+```
+
+#### ds_ping_method (string)
+With this method you can define, with which method you want to probe the gateways. Pinging gateways feature depends on ds_ping_interval parameter.
+
+Default value is “OPTIONS”.
+
+Example 1.20. Set the “ds_ping_method” parameter
+
+...
+modparam("dispatcher", "ds_ping_method", "INFO")
+...
+
+#### SIP requests
+There are fourteen SIP Request methods of which the first six are the most basic request / method types:
+
+* INVITE = Establishes a session
+* ACK = Confirms an INVITE request
+* BYE = Ends a session
+* CANCEL = Cancels establishing of a session
+* REGISTER = Communicates user location (host name, IP)
+* OPTIONS = Communicates information about the capabilities of the calling and receiving SIP phones
+* PRACK = Provisional Acknowledgement
+* SUBSCRIBE = Subscribes for Notification from the notifier
+* NOTIFY = Notifies the subscriber of a new event
+* PUBLISH = Publishes an event to the Server
+* INFO = Sends mid session information
+* REFER = Asks the recipient to issue call transfer
+* MESSAGE = Transports Instant Messages
+* UPDATE = Modifies the state of a session
+
+#### SIP responses
+SIP Requests are answered with SIP responses, of which there are six classes:
+
+* 1xx = Informational responses, such as 180 (ringing)
+* 2xx = Success responses
+* 3xx = Redirection responses
+* 4XX = Request failures
+* 5xx = Server errors
+* 6xx = Global failures
