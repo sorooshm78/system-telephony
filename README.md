@@ -219,3 +219,127 @@ Default value is ""
 		modparam("secfilter", "db_url", "mysql://user:pass@localhost/kamailio")
 ```
 
+### Functions
+#### secf_check_ip ()
+It checks if the source IP address is blacklisted. The search is approximate and data stored in the database will be compared as a prefix. For example, if we have blacklisted IP address 192.168.1. all messages from IPs like 192.168.1.% will be rejected.
+
+Return values are:
+
+* 2 = the value is whitelisted
+* 1 = the value is not found
+* -2 = the value is blacklisted
+
+Example 1.9. secf_check_ip usage
+```
+		...
+        secf_check_ip();
+        if ($? == -2) {
+                xlog("L_ALERT", "$rm from $si blocked because IP address is blacklisted");
+                exit;
+        }
+		...
+```
+
+#### secf_check_ua ()
+It checks if the user-agent is blacklisted. The search is approximate and the comparison will be made using the values of the database as a prefix. If we add to the user-agent blacklist the word sipcli, every message whose user-agent is named, for example, sipcli/1.6 or sipcli/1.8 will be blocked. It is very useful to block different versions of the same program.
+
+Return values are:
+
+2 = the value is whitelisted
+1 = the value is not found
+-1 = error
+-2 = the value is blacklisted
+Example 1.10. secf_check_ua usage
+```
+		...
+        secf_check_ua();
+        if ($? == -2) {
+                xlog("L_ALERT", "$rm from $si blocked because UserAgent '$ua' is blacklisted");
+                exit;
+        }
+		...
+```
+
+#### secf_check_country (string)
+Similar to secf_check_ua. It checks if the country (IP address) is blacklisted. Geoip module must be loaded to get the country code.
+
+Return values are:
+
+2 = the value is whitelisted
+1 = the value is not found
+-1 = error
+-2 = the value is blacklisted
+Example 1.11. secf_check_country usage
+```
+		...
+        if (geoip2_match("$si", "src")) {
+                secf_check_country($gip2(src=>cc));
+                if ($avp(secfilter) == -2) {
+                        xlog("L_ALERT", "$rm from $si blocked because Country '$gip2(src=>cc)' is blacklisted");
+                        exit;
+                }
+        }
+		...
+```
+
+#### secf_check_from_hdr ()
+It checks if any value of from header is blacklisted. It checks if from name or from user are in the users blacklist or whitelist. It also checks if the from domain is in the domains blacklist or whitelist. The blacklisted value will be used as a prefix and if we block, for example, the user sipvicious, all users whose name starts with this word will be considered as blacklisted.
+
+Return values are:
+
+4 = from name is whitelisted
+3 = from domain is whitelisted
+2 = from user is whitelisted
+1 = from header not found
+-1 = error
+-2 = from user is blacklisted
+-3 = from domain is blacklisted
+-4 = from name is blacklisted
+Example 1.12. secf_check_from_hdr usage
+```
+		...
+        secf_check_from_hdr();
+        switch ($?) {
+                case -2:
+                        xlog("L_ALERT", "$rm to $si blocked because From user '$fU' is blacklisted");
+                        exit;
+                case -3:
+                        xlog("L_ALERT", "$rm to $si blocked because From domain '$fd' is blacklisted");
+                        exit;
+                case -4:
+                        xlog("L_ALERT", "$rm to $si blocked because From name '$fn' is blacklisted");
+                        exit;
+        };
+		...
+```
+
+#### secf_check_to_hdr ()
+Do the same as secf_check_from_hdr function but with the to header.
+
+Return values are:
+
+4 = to name is whitelisted
+3 = to domain is whitelisted
+2 = to user is whitelisted
+1 = to header not found
+-1 = error
+-2 = to user is blacklisted
+-3 = to domain is blacklisted
+-4 = to name is blacklisted
+Example 1.13. secf_check_to_hdr usage
+```
+		...
+        secf_check_to_hdr();
+        switch ($?) {
+                case -2:
+                        xlog("L_ALERT", "$rm to $si blocked because To user '$tU' is blacklisted");
+                        exit;
+                case -3:
+                        xlog("L_ALERT", "$rm to $si blocked because To domain '$td' is blacklisted");
+                        exit;
+                case -4:
+                        xlog("L_ALERT", "$rm to $si blocked because To name '$tn' is blacklisted");
+                        exit;
+        };
+		...
+```
