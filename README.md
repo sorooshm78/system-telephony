@@ -317,7 +317,6 @@ Example 1.12. secf_check_from_hdr usage
 Do the same as secf_check_from_hdr function but with the to header.
 
 Return values are:
-
 4 = to name is whitelisted
 3 = to domain is whitelisted
 2 = to user is whitelisted
@@ -326,6 +325,7 @@ Return values are:
 -2 = to user is blacklisted
 -3 = to domain is blacklisted
 -4 = to name is blacklisted
+
 Example 1.13. secf_check_to_hdr usage
 ```
 		...
@@ -341,5 +341,53 @@ Example 1.13. secf_check_to_hdr usage
                         xlog("L_ALERT", "$rm to $si blocked because To name '$tn' is blacklisted");
                         exit;
         };
+		...
+```
+
+#### secf_check_contact_hdr ()
+Do the same as secf_check_from_hdr function but with the contact header.
+
+Return values are:
+3 = contact domain is whitelisted
+2 = contact user is whitelisted
+1 = contact header not found
+-1 = error
+-2 = contact user is blacklisted
+-3 = contact domain is blacklisted
+
+Example 1.14. secf_check_contact_hdr usage
+```
+		...
+        secf_check_contact_hdr();
+        switch ($?) {
+                case -2:
+                        xlog("L_ALERT", "$rm to $si blocked because Contact user '$ct' is blacklisted");
+                        exit;
+                case -3:
+                        xlog("L_ALERT", "$rm to $si blocked because Contact domain '$ct' is blacklisted");
+                        exit;
+        };
+		...
+```
+
+#### secf_check_dst (string)
+It checks if the destination number is blacklisted. It must be user for INVITE messages. If the value of dst_exact_match is 1, the call will appear as blacklisted if the destination is exactly the same. If the value is 0, every destination whose number begins with a number appearing on the destination blacklist will be rejected.
+
+Return values are:
+2 (if the value is whitelisted)
+1 (if the value not found)
+-2 (if the value is blacklisted)
+
+Example 1.15. secf_check_dst usage
+```
+		...
+		if (is_method("INVITE")) {
+			secf_check_dst($rU);
+			if ($? == -2) {
+				xlog("L_ALERT", "$rm from $si blocked because destination $rU is blacklisted");
+				send_reply("403", "Forbidden");
+				exit;
+			}
+		}
 		...
 ```
