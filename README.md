@@ -84,6 +84,58 @@ Format
 Content-Type: (type of content)
 ```
 
+# Kamailio Introduction
+Kamailio (formerly OpenSER) is an open source SIP server, but Kamailio is a bit difficult to grasp what “it is“, but once you understand it’s all very logical.
+
+Over this series I’ll attempt to explain what Kamailio is (and isn’t), and through a series of examples, show you how to use Kamailio to build cool stuff.
+
+I’ll try and make it accessible for people with a background / understanding of VoIP, specifically with an understanding of SIP.
+
+There’s a lot of meticulous documentation out there on specific Kamailio modules, but not much I could find that gives an overview of how the platform works, so over this series of Tutorials, I’ll attempt to cover the basics of using Kamailio to solve problems, as together we build a basic PBX with Kamailio, touching upon some of the common modules and core concepts of Kamailio.
+
+
+## So what is Kamailio ?
+Kamailio is a SIP Server.
+
+It’s a bit confusing at the start, because Kamailio isn’t like FreeSWITCH, Asterisk, YATE, an SBC, a PBX or any of other telephony platforms you may have encountered before, because out of the box, Kamailio doesn’t really do anything.
+
+You’ve got to tell Kamailio how to do everything.
+
+Let’s take a SIP INVITE message, used to start a call (aka session) that we might send to a PBX with the domain name biloxi.example.com and a SIP endpoint registered as ‘101’:
+
+INVITE sip:101@biloxi.example.com SIP/2.0
+If we sent this message to a generic PBX, the PBX would have the logic to know that it has an extension 101 and the PBX would ring extension 101.
+
+Our generic PBX looks at the Request URI in the INVITE message it received and has the logic predefined to know that 101 is a device it has registered and that we want to connect to that device, so sends the call to the matching device.
+
+If we sent the same INVITE to an Asterisk box, Asterisk would take a look at our SIP INVITE message, and see if there’s an entry in the dialplan under the current context for 101. Asterisk doesn’t assume if you have a user registered on SIP/101 and receive a SIP INVITE to 101 that you want to get to SIP/101, it’d need to be told this through the dialplan.
+
+Kamailio takes this example even further.
+
+If we want to dial 101 on Kamailio and have it ring the device registered on 101, you have to tell Kamailio what to do when it receives an INVITE message in the first place, lookup if that destination is in our AOR (we’ll get to that) table, and then forward the INVITE to the destination if it exists, and forward the provisional responses (1xx) and finally the final response (200 OK) from the remote end back to the originator. Plus we’ve got to think about how we handle a scenario where the destination doesn’t exist, or isn’t registered, of if the destination returns a 4xx response to the INVITE, how we handle provisional responses and CANCEL messages and finally the BYE message (if we’re record routing).
+
+Phew. This seems like a lot to handle.
+
+It all seems pretty daunting at first, calling from one SIP Endpoint to another seems like a pretty rudimentary thing in a telephony product, but by putting how the system thinks, routes and manipulates messages up to you, we open the doors to all the possibilities.
+
+What if you want something to sit in front of your servers and only allow certain SIP User Agents? Or load balance between several soft-switches? Or route least-cost between connected carriers and seamlessly failover if one is lost? Rate limit dodgy traffic before it hits your environment? Manage hundreds of thousands of registrations?
+
+Kamailio can do all of that.
+
+Kamailio can do anything you can think of (to do with signaling).
+
+And that’s the awesome part of Kamailio. It is, what you define it to be.
+
+So let’s get started!
+
+## What is PBX (Private Brand Exchange)?
+PBX stands for Private Branch Exchange. Think of it as an internal telephone network of a business or other entity. PBX phone system users can communicate with one another over the phone via internal lines, and make and receive external calls as well. A PBX phone system usually delivers business telephony features such as call forwarding, call transfer, call queue, auto-attendant, voicemail, etc.
+
+PBX systems operate by using either VoIP (Voice Over Internet Protocol) or via analog or digital phone lines. With a PBX phone system, the physical phone line coming into your business can be split into multiple lines, allowing you to support more telephones. Better yet, calls between users are free
+
+![](https://getvoip.com/uploads/VoIP-vs-PBX-e1662681663590.png)
+
+
 # Kamailio
 This tutorial collects the functions and parameters exported by Kamailio core to configuration file.
 
