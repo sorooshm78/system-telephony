@@ -653,6 +653,31 @@ modparam("dispatcher", "ds_retain_latency_stats", 1)
 ...
 ```
 
+### Functions
+#### ds_select(set, alg [, limit])
+The method selects a destination from addresses set and adds it in the XAVP specified for this module. It is not updating R-URI nor the destination URI. The parameters have same meaning as for ds_select_dst().
+
+If the bit 2 in 'flags' is set, the rest of the addresses from the destination set are stored in XAVP list (limited with an optional 'limit' parameter). You can execute 'ds_next_domain()' or 'ds_next_dst()' to use next address to achieve serial forking to all possible destinations.
+
+This function can be used from ANY_ROUTE.
+
+Example 1.51. ds_select usage
+```
+...
+$var(a) = 4;
+if(ds_select("1", "$var(a)")) {
+    ds_next_domain();
+    t_relay();
+    exit;
+}
+...
+```
+
+#### ds_next_dst()
+Takes the next destination address from the corresponding XAVPs and sets the dst_uri (outbound proxy address).
+
+This function can be used from REQUEST_ROUTE, FAILURE_ROUTE
+
 
 ### Configuration
 ### Parameters
@@ -829,11 +854,6 @@ MG2 > Kamailio:  SIP: SIP/2.0 200 OK
  
 Kamailio > UA :  SIP: SIP/2.0 200 OK
 ```
-
-### ds_next_dst()
-Takes the next destination address from the corresponding XAVPs and sets the dst_uri (outbound proxy address).
-
-This function can be used from REQUEST_ROUTE, FAILURE_ROUTE
 
 ### t_on_failure(failure_route)
 Sets failure routing block, to which control is passed after a transaction completed with a negative result but before sending a final reply. In the referred block, you can either start a new branch (good for services such as forward_on_no_reply) or send a final reply on your own (good for example for message silo, which received a negative reply from upstream and wants to tell upstream "202 I will take care of it"). Note that the set of commands which are usable within failure_routes is strictly limited to rewriting URI, initiating new branches, logging, and sending stateful replies (t_reply). Any other commands may result in unpredictable behavior and possible server failure. Note that whenever failure_route is entered, uri is reset to value which it had on relaying. If it temporarily changed during a reply_route processing, subsequent reply_route will ignore the changed value and use again the original one.
