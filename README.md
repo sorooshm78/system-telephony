@@ -550,3 +550,71 @@ SIP Requests are answered with SIP responses, of which there are six classes:
 * 4XX = Request failures
 * 5xx = Server errors
 * 6xx = Global failures
+
+
+# Ctl Module
+This module implements the binrpc transport interface for Kamailio RPCs. It supports various transports over which it speaks binrpc: Unix datagram sockets, Unix stream sockets, UDP and TCP. It also supports a backward compatible FIFO interface (using the old Kamailio FIFO protocol).
+
+By default (if no parameters are changed in the config file) it uses a Unix stream socket under /tmp: /tmp/ser_ctl. This socket is also the default for kamcmd.
+
+In general it's used in conjunction with kamcmd. kamcmd is a Unix tool for invoking Kamailio RPC functions. It can be used both in interactive mode (supports tab-completion and history) or command line mode.
+
+Example 1.1. kamcmd example usage
+```
+$ kamcmd ps
+11262	attendant
+11268	udp receiver child=0 sock=127.0.0.1:5060
+11269	udp receiver child=1 sock=127.0.0.1:5060
+11270	udp receiver child=0 sock=192.168.1.101:5060
+11271	udp receiver child=1 sock=192.168.1.101:5060
+11272	slow timer
+11273	timer
+11274	ctl handler
+11275	tcp receiver child=0
+11276	tcp receiver child=1
+11277	tcp main process
+```
+
+## params
+### binrpc (string)
+Specifies the transport used for the binrpc protocol. The following transport protocol are supported: Unix datagram sockets, Unix stream sockets, UDP and TCP.
+
+The format is: [ protocol:] address_port|path .
+
+* For Unix sockets: [unixd|unixs|unix]:path where "unixd" means Unix datagram sockets and "unix" "unixs" mean Unix stream sockets. Examples: "unixd:/tmp/unix_dgram", "unixs:/tmp/unix_stream", "unix:/tmp/unix_stream".
+* For UDP or TCP sockets: [udp|tcp]:address:port. If the address is "*" or missing, it will bind to all the local addresses (0.0.0.0). Examples: "udp:localhost:2046", "tcp:localhost:2046", "tcp:3012", "udp:*:3012".
+
+If the protocol part is missing and the address/path part looks like a file system path it will default to a Unix stream socket and if not to an Unix UDP socket. Examples:
+
+* "/tmp/unix_test" - equivalent to "unixs:/tmp/unix_test".
+* "localhost:3000" - equivalent to "udp:localhost:3000".
+Multiple transports / listen addresses can be specified, just by setting the parameter multiple times.
+
+Default:"unix:/tmp/ser_ctl" (Unix stream socket). The default value is used only if no binrpc parameter is found in the config file.
+
+Example 1.2. Set binrpc parameter
+```
+loadmodule "ctl"
+
+# optional listen addresses, if no one is specified,
+# ctl will listen on unixs:/tmp/ser_ctl
+
+modparam("ctl", "binrpc", "unix:/tmp/ser_ctl") # default
+modparam("ctl", "binrpc", "udp:localhost:2046")
+modparam("ctl", "binrpc", "tcp:localhost:2046")
+modparam("ctl", "binrpc", "unixd:/tmp/unix_dgram")  # unix datagram
+modparam("ctl", "binrpc", "unixs:/tmp/unix_stream") # unix stream
+modparam("ctl", "binrpc", "unix:/tmp/unix_default") # unix stream
+modparam("ctl", "binrpc", "/tmp/unix_test")         # unix stream
+modparam("ctl", "binrpc", "localhost:3000")         # udp
+modparam("ctl", "binrpc", "tcp:3012")               # tcp any , port 3012
+modparam("ctl", "binrpc", "udp:*:3012")             # udp any , port 3012
+```
+
+for example 
+```
+modparam("ctl", "binrpc", "tcp:localhost:8000")
+```
+```
+kamcmd -s tcp:<IP>:8000 <Kamcmd_Command>
+```
