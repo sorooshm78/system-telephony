@@ -805,6 +805,31 @@ Kamailio > UA :  SIP: SIP/2.0 200 OK
 And bingo, we’re connected to a Media Gateway 1.
 If I try it again I’ll get MG2, then MG1, then MG2, as we’re using round robin selection.
 
+### Destination Selection Algorithm
+We talked a little about the different destination select algorithm, let’s dig a little deeper into the common ones, this is taken from the Dispatcher documentation:
+
+* “0” – hash over callid
+* “4” – round-robin (next destination).
+* “6” – random destination (using rand()).
+* “8” – select destination sorted by priority attribute value (serial forking ordered by priority).
+* “9” – use weight based load distribution.
+* “10” – use call load distribution. 
+* “12” – dispatch to all destination in setid at once
+
+For select destination sorted by priority (8) to work you need to include a priority, you can do this when adding the dispatcher entry or after the fact by editing the data. In the below example if MG1 is up, calls will always go to MG1, if MG1 is down it’ll go to the next highest priority (MG2).
+
+![](https://nickvsnetworking.com/wp-content/uploads/2019/01/priorities.png)
+
+The higher the priority the more calls it will get
+For use weight based load distribution (9) to work, you’ll need to set a weight as well, this is similar to priority but allows you to split load, for example you could put weight=25 on a less powerful or slower destination, and weight=75 for a faster or more powerful destination, so the better destination gets 75% of traffic and the other gets 25%. (You don’t have to do these to add to 100%, I just find it easier to think of them as percentages).
+
+![](https://nickvsnetworking.com/wp-content/uploads/2019/01/kamailio-dispatcher-weight.png)
+
+use call load distribution (10) allows you to evenly split the number of calls to each destination. This could be useful if you’ve got say 2 SIP trunks with x channels on each trunk, but only x concurrent calls allowed on each. Like adding a weight you need to set a duid= value with the total number of calls each destination can handle.
+
+dispatch to all destination in setid at once (12) allows you to perform parallel branching of your call to all the destinations in the address group and whichever one answers first will handle the call. This adds a lot of overhead, as for each destination you have in that set will need a new dialog to be managed, but it sure is quick for the user. The other major issue is let’s say I have three carriers configured in dispatcher, and I call a landline.
+
+That landline will receive three calls, which will ring at the same time until the called party answers one of the calls. When they do the other two calls will stop ringing. This can get really messy.
 
 ### Managing Failure
 Let’s say we try and send a call to one of our Media Gateways and it fails, we could forward that failure response to the UA, or, better yet, we could try on another Media Gateway.
