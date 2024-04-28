@@ -737,7 +737,44 @@ Once we’re done with the maintenance we could force it into the up state by re
 
 It’s worth noting that if you restart Kamailio, or reload dispatcher, the state of each destination is reset, and starts again from AX and progresses to AP (Up) or IP (Down) based on if the destination is responding.
 
+### Routing using Dispatcher
+The magic really comes down to single simple line, ds_select_dst();
 
+The command sets the destination address to an address from the pool of up addresses in dispatcher.
+
+You’d generally give ds_select_dst(); two parameters, the first is the destination set, in our case this is 1, because all our Media Gateway destinations are in set ID 1. The next parameter is is the algorithm used to work out which destination from the pool to use for this request.
+
+Some common entries would be random, round robin, weight based or priority value.
+
+In our example we’ll use a random selection between up destinations in group 1:
+
+```
+if(method=="INVITE"){
+   ds_select_dst(1, 4);    #Get a random up destination from dispatcher
+   route(RELAY);           #Route it
+}
+```
+
+Now let’s try and make a call:
+
+```
+UA > Kamailio: SIP: INVITE sip:1111111@Kamailio SIP/2.0
+
+Kamailio > UA: SIP: SIP/2.0 100 trying -- your call is important to us
+
+Kamailio > MG1: SIP: INVITE sip:1111111@MG1 SIP/2.0 
+
+MG1 > Kamailio: SIP: SIP/2.0 100 Trying
+ 
+Kamailio > UA : SIP: SIP/2.0 100 Trying 
+
+MG1 > Kamailio:  SIP: SIP/2.0 200 OK
+ 
+Kamailio > UA :  SIP: SIP/2.0 200 OK 
+```
+
+And bingo, we’re connected to a Media Gateway 1.
+If I try it again I’ll get MG2, then MG1, then MG2, as we’re using round robin selection.
 
 # Ctl Module
 This module implements the binrpc transport interface for Kamailio RPCs. It supports various transports over which it speaks binrpc: Unix datagram sockets, Unix stream sockets, UDP and TCP. It also supports a backward compatible FIFO interface (using the old Kamailio FIFO protocol).
