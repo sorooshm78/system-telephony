@@ -633,6 +633,22 @@ modparam("dispatcher", "ds_probing_mode", 1)
 ...
 ```
 
+#### ds_retain_latency_stats (int)
+Retain latency stats for existing destinations when reloading from file or database.
+
+If set to 0, stats for all destinations will be reset on reload.
+
+If set to 1, stats for existing destinations will persist across reloads.
+
+Default value is “0”.
+
+Example 1.29. Set the “ds_retain_latency_stats” parameter
+```
+...
+modparam("dispatcher", "ds_retain_latency_stats", 1)
+...
+```
+
 
 ### Configuration
 ### Parameters
