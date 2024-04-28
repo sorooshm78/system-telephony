@@ -776,6 +776,80 @@ Kamailio > UA :  SIP: SIP/2.0 200 OK
 And bingo, we’re connected to a Media Gateway 1.
 If I try it again I’ll get MG2, then MG1, then MG2, as we’re using round robin selection.
 
+
+### Managing Failure
+Let’s say we try and send a call to one of our Media Gateways and it fails, we could forward that failure response to the UA, or, better yet, we could try on another Media Gateway.
+
+Let’s set a priority of 10 to MG1 and a priority of 5 to MG2, and then set MG1 to reject the call.
+![](https://nickvsnetworking.com/wp-content/uploads/2019/01/priorities-2.png)
+
+We’ll also need to add a failure route, so let’s tweak our code:
+
+```
+if(method=="INVITE"){
+        ds_select_dst(1, 12);
+        t_on_failure("DISPATCH_FAILURE");
+        route(RELAY);
+}
+```
+
+And the failure route:
+```
+route[DISPATCH_FAILURE]{
+        xlog("Trying next destination");
+        ds_next_dst();
+        route(RELAY);
+}
+```
+
+ds_next_dst() gets the next available destination from dispatcher. Let’s see how this looks in practice:
+
+``` 
+UA > Kamailio: SIP: INVITE sip:1111111@Kamailio SIP/2.0
+
+Kamailio > UA: SIP: SIP/2.0 100 trying -- your call is important to us
+
+Kamailio > MG1: SIP: INVITE sip:1111111@MG1 SIP/2.0 
+
+MG1 > Kamailio: SIP: SIP/2.0 100 Trying
+
+MG1 > Kamailio:  SIP: SIP/2.0 404 Not Found
+ 
+Kamailio > MG1 :  SIP: SIP/2.0 ACK
+
+Kamailio > MG2: SIP: INVITE sip:1111111@MG2 SIP/2.0  
+
+MG2 > Kamailio: SIP: SIP/2.0 100 Trying
+
+MG2 > Kamailio:  SIP: SIP/2.0 200 OK
+ 
+Kamailio > UA :  SIP: SIP/2.0 200 OK
+```
+
+#### t_on_failure(failure_route)
+Sets failure routing block, to which control is passed after a transaction completed with a negative result but before sending a final reply. In the referred block, you can either start a new branch (good for services such as forward_on_no_reply) or send a final reply on your own (good for example for message silo, which received a negative reply from upstream and wants to tell upstream "202 I will take care of it"). Note that the set of commands which are usable within failure_routes is strictly limited to rewriting URI, initiating new branches, logging, and sending stateful replies (t_reply). Any other commands may result in unpredictable behavior and possible server failure. Note that whenever failure_route is entered, uri is reset to value which it had on relaying. If it temporarily changed during a reply_route processing, subsequent reply_route will ignore the changed value and use again the original one.
+
+Meaning of the parameters is as follows:
+
+failure_route - Failure route block to be called.
+
+Example 1.58. t_on_failure usage
+```
+...
+route {
+    t_on_failure("1");
+    t_relay();
+}
+
+failure_route[1] {
+    revert_uri();
+    setuser("voicemail");
+    append_branch();
+}
+...
+```
+
+
 # Ctl Module
 This module implements the binrpc transport interface for Kamailio RPCs. It supports various transports over which it speaks binrpc: Unix datagram sockets, Unix stream sockets, UDP and TCP. It also supports a backward compatible FIFO interface (using the old Kamailio FIFO protocol).
 
