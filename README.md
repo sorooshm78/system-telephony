@@ -552,6 +552,95 @@ SIP Requests are answered with SIP responses, of which there are six classes:
 * 6xx = Global failures
 
 
+### Configuration
+### Parameters
+You’ll need to load the dispatcher module, by adding the below line with the rest of your loadmodules:
+```
+loadmodule "dispatcher.so"
+```
+Next we’ll need to set the module specific config using modparam for dispatcher:
+```
+modparam("dispatcher", "db_url", DBURL)                 #Use DBURL variable for database parameters
+modparam("dispatcher", "ds_ping_interval", 10)          #How often to ping destinations to check status
+modparam("dispatcher", "ds_ping_method", "OPTIONS")     #Send SIP Options ping
+modparam("dispatcher", "ds_probing_threshold", 10)      #How many failed pings in a row do we need before we consider it down
+modparam("dispatcher", "ds_inactive_threshold", 10)     #How many sucessful pings in a row do we need before considering it up
+modparam("dispatcher", "ds_ping_latency_stats", 1)      #Enables stats on latency
+modparam("dispatcher", "ds_probing_mode", 1)            #Keeps pinging gateways when state is known (to detect change in state)
+```
+
+Most of these are pretty self explanatory but you’ll probably need to tweak these to match your environment.
+
+### Destination Setup
+Like the permissions module, dispatcher module has groups of destinations.
+
+For this example we’ll be using dispatch group 1, which will be a group containing our Media Gateways, and the SIP URIs are sip:mg1:5060 and sip:mg2:5060
+
+From the shell we’ll use kamctl to add a new dispatcher entry.
+```
+kamctl dispatcher add 1 sip:mg1:5060 0 0 '' 'Media Gateway 1'
+kamctl dispatcher add 1 sip:mg2:5060 0 0 '' 'Media Gateway 2' 
+```
+
+Alternately you could do this in the database itself:
+
+```
+INSERT INTO `dispatcher` (`id`, `setid`, `destination`, `flags`, `priority`, `attrs`, `description`) VALUES (NULL, '1', 'sip:mg3:5060', '0', '0', '', 'Media Gateway 3'); 
+Or you could use Siremis GUI to add the entries.
+```
+
+You can use kamctl to show you the database entries:
+
+```
+kamctl dispatcher show
+```
+
+![](https://nickvsnetworking.com/wp-content/uploads/2019/01/dispatcher-kamctl.png)
+
+### Destination Status / Control
+Checking Status
+Next up we’ll check if our gateways are online, we’ll use kamcmd to show the current status of the destinations:
+```
+kamcmd dispatcher.list
+```
+![](https://nickvsnetworking.com/wp-content/uploads/2019/01/kamcmd-dispatcher.list-All-active-probing.png)
+
+Here we can see our two media gateways, quick response times to each, and everything looks good.
+
+Take a note of the FLAGS field, it’s currently set to AP which is good, but there’s a few states:
+
+* AP – Active Probing – Destination is responding to pings & is up
+* IP – Inactive Probing – Destination is not responding to pings and is probably unreachable
+* DX – Destination is disabled (administratively down)
+* AX – Looks like is up or is coming up, but has yet to satisfy minimum thresholds to be considered up (ds_inactive_threshold)
+* TX – Looks like or is, down. Has stopped responding to pings but has not yet satisfied down state failed ping count (ds_probing_threshold)
+
+### Adding Additional Destinations without Restarting
+If we add an extra destination now, we can add it without having to restart Kamailio, by using kamcmd:
+```
+kamcmd dispatcher.reload
+```
+There’s some sanity checks built into this, if the OS can’t resolve a domain name in dispatcher you’ll get back an error:
+
+![](https://nickvsnetworking.com/wp-content/uploads/2019/01/kamcmd-failing-to-add-dispatcher.png)
+
+### Administratively Disable Destinations
+You may want to do some work on one of the Media Gateways and want to nicely take it offline, for this we use kamcmd again:
+
+```
+kamcmd dispatcher.set_state dx 1 sip:mg1:5060
+```
+
+Now if we check status we see MG1’s status is DX:
+
+![](https://nickvsnetworking.com/wp-content/uploads/2019/01/kamailio-dispatcher-destination-down.png)
+
+Once we’re done with the maintenance we could force it into the up state by replacing dx with ap.
+
+It’s worth noting that if you restart Kamailio, or reload dispatcher, the state of each destination is reset, and starts again from AX and progresses to AP (Up) or IP (Down) based on if the destination is responding.
+
+
+
 # Ctl Module
 This module implements the binrpc transport interface for Kamailio RPCs. It supports various transports over which it speaks binrpc: Unix datagram sockets, Unix stream sockets, UDP and TCP. It also supports a backward compatible FIFO interface (using the old Kamailio FIFO protocol).
 
