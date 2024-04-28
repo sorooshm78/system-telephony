@@ -321,8 +321,8 @@ Type values are:
 Database URL.
 Default value is ""
 ```
-		...
-		modparam("secfilter", "db_url", "mysql://user:pass@localhost/kamailio")
+...
+modparam("secfilter", "db_url", "mysql://user:pass@localhost/kamailio")
 ```
 
 ### Functions
@@ -337,13 +337,13 @@ Return values are:
 
 Example 1.9. secf_check_ip usage
 ```
-		...
-        secf_check_ip();
-        if ($? == -2) {
-                xlog("L_ALERT", "$rm from $si blocked because IP address is blacklisted");
-                exit;
-        }
-		...
+        ...
+secf_check_ip();
+if ($? == -2) {
+        xlog("L_ALERT", "$rm from $si blocked because IP address is blacklisted");
+        exit;
+}
+        ...
 ```
 
 #### secf_check_ua ()
@@ -357,13 +357,13 @@ Return values are:
 -2 = the value is blacklisted
 Example 1.10. secf_check_ua usage
 ```
-		...
-        secf_check_ua();
-        if ($? == -2) {
-                xlog("L_ALERT", "$rm from $si blocked because UserAgent '$ua' is blacklisted");
-                exit;
-        }
-		...
+        ...
+secf_check_ua();
+if ($? == -2) {
+        xlog("L_ALERT", "$rm from $si blocked because UserAgent '$ua' is blacklisted");
+        exit;
+}
+        ...
 ```
 
 #### secf_check_country (string)
@@ -377,15 +377,15 @@ Return values are:
 -2 = the value is blacklisted
 Example 1.11. secf_check_country usage
 ```
-		...
-        if (geoip2_match("$si", "src")) {
-                secf_check_country($gip2(src=>cc));
-                if ($avp(secfilter) == -2) {
-                        xlog("L_ALERT", "$rm from $si blocked because Country '$gip2(src=>cc)' is blacklisted");
-                        exit;
-                }
+        ...
+if (geoip2_match("$si", "src")) {
+        secf_check_country($gip2(src=>cc));
+        if ($avp(secfilter) == -2) {
+                xlog("L_ALERT", "$rm from $si blocked because Country '$gip2(src=>cc)' is blacklisted");
+                exit;
         }
-		...
+}
+        ...
 ```
 
 #### secf_check_from_hdr ()
@@ -403,20 +403,20 @@ Return values are:
 -4 = from name is blacklisted
 Example 1.12. secf_check_from_hdr usage
 ```
-		...
-        secf_check_from_hdr();
-        switch ($?) {
-                case -2:
-                        xlog("L_ALERT", "$rm to $si blocked because From user '$fU' is blacklisted");
-                        exit;
-                case -3:
-                        xlog("L_ALERT", "$rm to $si blocked because From domain '$fd' is blacklisted");
-                        exit;
-                case -4:
-                        xlog("L_ALERT", "$rm to $si blocked because From name '$fn' is blacklisted");
-                        exit;
-        };
-		...
+        ...
+secf_check_from_hdr();
+switch ($?) {
+        case -2:
+                xlog("L_ALERT", "$rm to $si blocked because From user '$fU' is blacklisted");
+                exit;
+        case -3:
+                xlog("L_ALERT", "$rm to $si blocked because From domain '$fd' is blacklisted");
+                exit;
+        case -4:
+                xlog("L_ALERT", "$rm to $si blocked because From name '$fn' is blacklisted");
+                exit;
+};
+        ...
 ```
 
 #### secf_check_to_hdr ()
@@ -434,20 +434,20 @@ Return values are:
 
 Example 1.13. secf_check_to_hdr usage
 ```
-		...
-        secf_check_to_hdr();
-        switch ($?) {
-                case -2:
-                        xlog("L_ALERT", "$rm to $si blocked because To user '$tU' is blacklisted");
-                        exit;
-                case -3:
-                        xlog("L_ALERT", "$rm to $si blocked because To domain '$td' is blacklisted");
-                        exit;
-                case -4:
-                        xlog("L_ALERT", "$rm to $si blocked because To name '$tn' is blacklisted");
-                        exit;
-        };
-		...
+        ...
+secf_check_to_hdr();
+switch ($?) {
+        case -2:
+                xlog("L_ALERT", "$rm to $si blocked because To user '$tU' is blacklisted");
+                exit;
+        case -3:
+                xlog("L_ALERT", "$rm to $si blocked because To domain '$td' is blacklisted");
+                exit;
+        case -4:
+                xlog("L_ALERT", "$rm to $si blocked because To name '$tn' is blacklisted");
+                exit;
+};
+        ...
 ```
 
 #### secf_check_contact_hdr ()
@@ -463,17 +463,17 @@ Return values are:
 
 Example 1.14. secf_check_contact_hdr usage
 ```
-		...
-        secf_check_contact_hdr();
-        switch ($?) {
-                case -2:
-                        xlog("L_ALERT", "$rm to $si blocked because Contact user '$ct' is blacklisted");
-                        exit;
-                case -3:
-                        xlog("L_ALERT", "$rm to $si blocked because Contact domain '$ct' is blacklisted");
-                        exit;
-        };
-		...
+        ...
+secf_check_contact_hdr();
+switch ($?) {
+        case -2:
+                xlog("L_ALERT", "$rm to $si blocked because Contact user '$ct' is blacklisted");
+                exit;
+        case -3:
+                xlog("L_ALERT", "$rm to $si blocked because Contact domain '$ct' is blacklisted");
+                exit;
+};
+        ...
 ```
 
 #### secf_check_dst (string)
@@ -486,16 +486,16 @@ Return values are:
 
 Example 1.15. secf_check_dst usage
 ```
-		...
-		if (is_method("INVITE")) {
-			secf_check_dst($rU);
-			if ($? == -2) {
-				xlog("L_ALERT", "$rm from $si blocked because destination $rU is blacklisted");
-				send_reply("403", "Forbidden");
-				exit;
-			}
-		}
-		...
+...
+if (is_method("INVITE")) {
+        secf_check_dst($rU);
+        if ($? == -2) {
+                xlog("L_ALERT", "$rm from $si blocked because destination $rU is blacklisted");
+                send_reply("403", "Forbidden");
+                exit;
+        }
+}
+...
 ```
 
 ## Dispatcher Module
