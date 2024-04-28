@@ -523,7 +523,7 @@ Example 1.20. Set the “ds_ping_method” parameter
 modparam("dispatcher", "ds_ping_method", "INFO")
 ...
 
-#### SIP requests
+##### SIP requests
 There are fourteen SIP Request methods of which the first six are the most basic request / method types:
 
 * INVITE = Establishes a session
@@ -541,7 +541,7 @@ There are fourteen SIP Request methods of which the first six are the most basic
 * MESSAGE = Transports Instant Messages
 * UPDATE = Modifies the state of a session
 
-#### SIP responses
+##### SIP responses
 SIP Requests are answered with SIP responses, of which there are six classes:
 
 * 1xx = Informational responses, such as 180 (ringing)
@@ -550,6 +550,88 @@ SIP Requests are answered with SIP responses, of which there are six classes:
 * 4XX = Request failures
 * 5xx = Server errors
 * 6xx = Global failures
+
+#### ds_probing_threshold (int)
+If you want to set a gateway into inactive mode, there can be a specific number of failed requests until it will change from "active" to "inactive". It is using the state "trying", that allows selection of gateway but indicates there was a failure previously with the gateway. The number of attempts can be set with this parameter. This parameter can be modified via ser config framework.
+
+Default value is “1” (set inactive with first failure).
+
+Example 1.23. Set the “ds_probing_threshold” parameter
+```
+...
+modparam("dispatcher", "ds_probing_threshold", 10)
+...
+```
+
+#### ds_inactive_threshold (int)
+If you want to set a gateway into active mode (after being inactive), there can be a specific number of successful requests until it will change from "inactive" to "active". The number of attempts can be set with this parameter. This parameter can be modified via ser config framework.
+
+Default value is “1” (set active with first success).
+
+Example 1.24. Set the “ds_inactive_threshold” parameter
+
+...
+modparam("dispatcher", "ds_inactive_threshold", 10)
+...
+
+
+#### ds_ping_latency_stats (int)
+Enable latency measurement when pinging nodes The estimator can be initialized at startup and reload using the attribute latency.
+
+* If set to 0, disable latency measurement.
+* If set to 1, enable latency measurement.
+
+Default value is “0”.
+
+Example 1.27. accessing the metrics
+```
+# using the command :
+kamcmd dispatcher.list
+...
+DEST: {
+	URI: sip:1.2.3.4
+	FLAGS: AX
+	PRIORITY: 9
+	ATTRS: {
+		BODY: latency=24
+	}
+	LATENCY: {
+		AVG: 24.250000 # weighted moving average for the last few weeks
+		STD: 1.035000  # standard deviation of AVG
+		EST: 25.000000 # short term estimate, see parameter: ds_latency_estimator_alpha
+		MAX: 26        # maximum value seen
+		TIMEOUT: 0     # count of ping timeouts
+	}
+}
+...
+```
+
+Example 1.28. Set the “ds_ping_latency_stats” parameter
+```
+...
+modparam("dispatcher", "ds_ping_latency_stats", 1)
+...
+```
+
+#### ds_probing_mode (int)
+Controls what gateways are tested to see if they are reachable.
+
+* Value 0: If set to 0, only the gateways with state PROBING are tested. After a gateway is probed, the PROBING state is cleared in this mode. This means that no probing will be executed at all only if flag in config file is set to 8/PROBING (please check destination list file syntaxis for more details), it will probe only one time at startup or after dispatcher reload.
+
+* Value 1: If set to 1, all gateways are tested. If set to 1 and there is a failure of keepalive to an active gateway, then it is set to TRYING state. This means that probing will be executed all the time, but you can skip some servers with flag 4 in destination list file, for example.
+
+* Value 2: if set to 2, only gateways in INACTIVE state with PROBING mode set are tested.
+
+* Value 3: If set to 3, any gateway with state PROBING is continually probed without modifying/removing the PROBING state. This allows selected gateways to be probed continually, regardless of state changes.
+
+Default value is “0”.
+
+Example 1.26. Set the “ds_probing_mode” parameter
+```
+...
+modparam("dispatcher", "ds_probing_mode", 1)
+...
+```
 
 
 ### Configuration
