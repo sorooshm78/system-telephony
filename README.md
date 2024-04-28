@@ -499,6 +499,10 @@ if (is_method("INVITE")) {
 ```
 
 ## Dispatcher Module
+### Links
+* [kamailio.org](https://www.kamailio.org/docs/modules/devel/modules/dispatcher.html)
+* [nickvsnetworking.com](https://nickvsnetworking.com/kamailio-dispatcher/)
+
 ### Params
 #### ds_ping_interval (int)
 With this parameter you can define the interval for sending a request to a gateway marked as inactive upon a failed request routing to it. This parameter is only used, when the TM-Module is loaded. If set to “0”, the pinging of inactive gateway is disabled.
