@@ -126,7 +126,58 @@ Kamailio can do anything you can think of (to do with signaling).
 
 And that’s the awesome part of Kamailio. It is, what you define it to be.
 
-So let’s get started!
+
+## Configuration
+We’ll open kamailio.cfg – the text file that contains all our routing info, and get to work.
+
+```
+vi /etc/kamailio/kamailio.cfg
+```
+
+You’ll see the config starts by defining what modules to load, and the config for each of these modules. For us, the defaults will work for now, let’s get to the juicy bits. Keep moving down the config file until you hit this section:
+
+```
+/* Main SIP request routing logic
+ * - processing of any incoming SIP request starts with this route
+ * - note: this is the same as route { ... } */
+request_route {
+```
+The request_route section is what handles the initial SIP message that comes through.
+
+We’ll remove all the text after request_route { leaving us with a blank canvas in terms of how we handle messages. We’ll then put in a single line to log to syslog when we get a SIP message:
+
+```
+/* Main SIP request routing logic
+ * - processing of any incoming SIP request starts with this route
+ * - note: this is the same as route { ... } */
+request_route {
+        xlog("I got a message");
+}
+```
+
+If we were to stop here and restart Kamailio, when a SIP message comes into our SIP server, we’d just write an entry to syslog saying “I got a message” each time we get a SIP message, but Kamailio won’t respond to the received SIP message, it’ll just enter a log entry each time it gets a SIP message. So let’s respond to any SIP message we get with a 501 “Not Implemented” message.
+
+```
+/* Main SIP request routing logic
+ * - processing of any incoming SIP request starts with this route
+ * - note: this is the same as route { ... } */
+request_route {
+        xlog("I got a message");
+        sl_reply("501", "Not Implemented");
+}
+```
+
+So let’s break down the two functions we just used.
+
+## xlog("");
+xlog is your friend.
+Put simply xlog prints whatever you put inside the parenthesis to syslog.
+You can use it to check to see if your messages are getting to the part of the config you want, check what pseudovariables are doing and many other things, but I’m getting ahead of myself. For now you just need to know xlog is like NoOp() in Asterisk, print() in Python, etc.
+
+## sl_reply();
+sl_reply is stateless reply.
+It takes two parameters, the SIP Response Code and the text to go with it, when called it sends the SIP response code and text back to the requester.
+In this case we’re using SIP Response Code 501, which translates to Not Implemented, meaning the server does not support the functionality required to fulfill the request aka:
 
 ## What is PBX (Private Brand Exchange)?
 PBX stands for Private Branch Exchange. Think of it as an internal telephone network of a business or other entity. PBX phone system users can communicate with one another over the phone via internal lines, and make and receive external calls as well. A PBX phone system usually delivers business telephony features such as call forwarding, call transfer, call queue, auto-attendant, voicemail, etc.
