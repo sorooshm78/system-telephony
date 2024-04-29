@@ -653,6 +653,144 @@ modparam("dispatcher", "ds_retain_latency_stats", 1)
 ...
 ```
 
+#### use_default (int)
+If the parameter is set to 1, the last address in destination set is used as a final option to send the request to. For example, it is useful when wanting to send the call to an announcement server saying: "the gateways are full, try later".
+
+Default value is “0”.
+
+Example 1.11. Set the “use_default” parameter
+```
+...
+modparam("dispatcher", "use_default", 1)
+...
+```     
+
+#### xavp_dst (str)
+The name of the XAVP which will hold the list with addresses and associated properties, in the order they have been selected by the chosen algorithm. If use_default is 1, the values of last XAVP correspond to the last address in destination set. In case of using dispatcher.list file, you have to set the priority field for each destination to ensure a particular order there. The first XAVP is the current selected destination. All the other addresses from the destination set will be added in the XAVP list to be able to implement serial forking.
+
+Note
+You must set this parameter if you want to do load balancing fail over.
+
+Default value is “_dsdst_”.
+
+Example 1.12. Set the “xavp_dst” parameter
+```
+...
+modparam("dispatcher", "xavp_dst", "_dsdst_")
+...
+```
+
+#### $avp(id) - AVPs
+$avp(id) - the value of the AVP identified by 'id'.
+$(avp(id)[N]) - represents the value of N-th AVP identified by 'id'.
+
+The 'id' can be:
+
+“[(s|i):]name” - name is the id of an AVP; 's' and 'i' specifies if the id is string or integer. If missing, it is considered to be string.
+“name” - the name is an AVP alias, or if the alias is not found, it is a string name
+pseudo variable - if value of pv is integer, id is integer, if string, id is string
+$(avp(id)[0]) can be written in shorter form as $avp(id) and $avp(s:name) as $avp(name).
+
+AVPs are special variables that are attached to SIP transactions. It is a list of pairs (name,value). Before the transaction is created, the AVP list is attached to SIP request. Note that the AVP list works like a stack, last added value is retrieved first, and there can be many values for same AVP name, an assignment to the same AVP name does not overwrite old value, it will add the new value in the list.
+
+To delete the first AVP with name 'id' you have to assign to it '$null':
+
+```
+$avp(id) = $null;
+```
+
+To delete all the AVP with name 'id' you have to assign $null to the index '*':
+
+```
+$(avp(id)[*]) = $null;
+```
+
+To overwrite the value of the AVP with name 'id' you have to assign the new value to the index '*':
+
+```
+$(avp(id)[*]) = newvalue;
+```
+
+The value of an AVP can be integer or string. To assign a value as string, it has to be enclosed in double quotes. To assign the value as integer, it has to be a valid number given without quotes.
+
+Example of usage:
+```
+$avp(x) = 1;  # assign of integer value
+$avp(x) = 2;
+$avp(y) = "abc"; # assign of string value
+if($(avp(x)[1])==1) {
+  ...
+}
+$(avp(x)[1]) = $null;
+It is R/W variable (you can assign values to it directly in configuration file).
+```
+
+#### $xavp(id) - XAVPs
+xavp - eXtended AVPs - are variables that can store multiple values, which can also be grouped in a structure-like fashion. Their value can be a string, an integer number or a list of named values (child values).
+
+They work like a stack, similar to AVPs, and are attached to SIP transactions and automatically destroyed when the transaction is finished.
+
+Each xavp has a string name and can contain a string, and integer or a list of named values. The structure name (or root list name) and the value name (or field name, or child value name) are separated by => like $xavp(root=>field) where “root” is the name of the structure and “field” is the name of the (child) value.
+
+To assign a single value use:
+
+```
+$xavp(root)="string value";
+$xavp(root)=intnumber;
+```
+
+To assign a named value use:
+```
+$xavp(root=>field)="string value";
+$xavp(root=>field)=intnumber;
+```
+
+Like avps, xavp act like a stack. To refer to an existing value, use an index. The newest xavp has index zero [0].
+```
+$xavp(root[0]=>field)=12;
+```
+
+If you assign a value without an index, a new xavp is allocated and the old one is pushed up the stack, becoming index [1]. Old index [1] becomes [2] etc.
+```
+# new item (person => [(lastname = "Smith")])
+$xavp(person=>lastname)="Smith";
+ 
+# add new item (person => [(lastname = "Doe")])
+$xavp(person=>lastname)="Doe";
+ 
+# add another named value to the last example item
+#   (person => [(firstname="John"), (lastname = "Doe")])
+$xavp(person[0]=>firstname)="John";
+ 
+# add another named value to first example item
+#   (person => [(firstname="Alice"), (lastname = "Smith")])
+xavp(person[1]=>firstname)="Alice";
+```
+
+Another example:
+```
+# create new (the first) root xavp with a named value of string type
+$xavp(sf=>uri)="sip:10.10.10.10";
+ 
+# add named values (child values)
+$xavp(sf[0]=>fr_timer)=10;
+$xavp(sf[0]=>fr_inv_timer)=15;
+$xavp(sf[0]=>headers)="X-CustomerID: 1234\r\n";
+ 
+# create new (the second) root xavp with a named value of string type, moving previous one to sf[1]
+$xavp(sf=>uri)="sip:10.10.10.11";
+# add named values (child values)
+$xavp(sf[0]=>fr_timer)=20;
+$xavp(sf[0]=>fr_inv_timer)=35;
+ 
+# create new (the third) xavp with a named value of string type, moving previous one to sf[1] and the other one to sf[2]
+$xavp(sf=>uri)="sip:10.10.10.12";
+# add named values (child values)
+$xavp(sf[0]=>fr_timer)=10;
+$xavp(sf[0]=>fr_inv_timer)=15;
+$xavp(sf[0]=>headers)="X-CustomerID: pw45\r\n";
+```
+
 ### Functions
 #### ds_select(set, alg [, limit])
 The method selects a destination from addresses set and adds it in the XAVP specified for this module. It is not updating R-URI nor the destination URI. The parameters have same meaning as for ds_select_dst().
