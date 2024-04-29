@@ -189,6 +189,112 @@ PBX systems operate by using either VoIP (Voice Over Internet Protocol) or via a
 
 ![](https://getvoip.com/uploads/VoIP-vs-PBX-e1662681663590.png)
 
+## General Rules
+Some rules of thumb to get you started with writing Kamailio configs:
+
+* All lines that do things (instructions) have to end with a semicolon
+* Comments start with # if single line or /* blah */ for multi-line
+* Changes to the config only take effect when you restart Kamailio
+* With what we have setup restarting Kamailio causes it to forget all about your active Registrations (Even though your devices might say they’re still registered) (For now, although we can change this behaviour)
+
+Now we’ve got that out of the way let’s continue on from our last tutorial and start routing requests!
+
+(We’ll skip all the config above the request_route{} block that configures the modules and their setup, it’s all very important, but we’ll touch upon that in a later tutorial I promise)
+
+As I touched upon in the Introduction post, you define what Kamailio is and does in terms of routing SIP requests, so let’s jump straight in and get started on the blocks that take care of this.
+
+## The request_route{} Block
+The request_route{} block is where all our incoming SIP requests start off. Replies / responses are handled a bit differently (more on that later), but essentially every new SIP request / message / dialog starts off here.
+
+We can create new blocks other than request_route{} to help keep our code clean, in the same way we might define functions while programming.
+
+```
+Let’s take a look:
+
+request_route {
+        route(RESPOND_501);    #Jump to the RESPOND_501 block
+}
+
+route[RESPOND_501]{
+        sl_reply("501", "Not Implemented");   #Send 501 reply
+}
+```
+
+We can see in the above example, any SIP Request coming in will enter our request_route{},
+
+In our request_route{} block we only have one instruction, which is route().
+
+The route() command allows us to then specify another block of the config file / code to continue on from. Think of it kind of like calling a function or god forbid – a GoTo. So in this example the call comes in and then routed off to a new routing block called route[RESPOND_501],
+
+This allows us to reuse bits of code multiple times and generally keep everything a lot cleaner.
+
+It’s worth noting that unless you tell it to, routing to another block won’t stop Kamailio from continuing to execute it’s way through the code, it’ll do what it’s told in the other routing block and then finish what it started.
+
+Let’s look at an example:
+
+```
+request_route {
+        xlog("Hello, I am in the request_route");
+        route(RESPOND_501);    #Jump to the RESPOND_501 block
+        xlog("Back in request_route");
+}
+
+route[RESPOND_501]{
+        xlog("Now I am in the respond 501 route");
+        sl_reply("501", "Not Implemented");   #Send 501 reply
+}
+```
+
+If we’re to run this code and send a SIP Request to it, we’d see each of these xlog entries in your syslog,
+
+* As the message firsts hits the xlog(“Hello, I am in the request_route”);, then is routed off to route[RESPOND_501]
+* In route[RESPOND_501] we’ll see the xlog(Now I am in the respond 501 route”); – Kamailio has now executed the route[RESPOND_501] block and resumes from where it was in request_route{}
+
+When we get back to request_route we get the final xlog(“Back in request_route”);.
+We can stop routing in a specific block using the exit; command which stops processing that request once hit. For example:
+
+```
+request_route {
+        xlog("Hello, I am in the request_route");
+        route(RESPOND_501);    #Jump to the RESPOND_501 block
+        xlog("Back in request_route");
+}
+
+route[RESPOND_501]{
+        xlog(Now I am in the respond 501 route");
+        sl_reply("501", "Not Implemented");   #Send 501 reply
+        exit;
+}
+```
+
+Because of the exit we added in the route[RESPOND_501] Kamailio stops executing at that point, so we don’t continue passing through the config file and this time we won’t get the final xlog(“Back in request_route”); call
+
+## Basic Message Routing
+Let’s take a very basic use case, and write some code in the request_route{} block.
+
+We’ll set it up so if we receive an INVITE request, we’re going to respond with a 480 Temporarily Unavailable message, and for everything else, we’ll respond with 501 “Not Implemented”.
+
+```
+/* Main SIP request routing logic
+ * - processing of any incoming SIP request starts with this route
+ * - note: this is the same as route { ... } */
+request_route {
+        if(method=="INVITE"){
+                sl_reply("480", "Temporarily Unavailable");
+                exit;
+        }
+        sl_reply("501", "Not Implemented");
+}
+```
+
+So let’s break this down,
+First we have a an if statement – If the method of the SIP message is an INVITE request, then execute the code inside the curly brackets.
+
+Inside the curly brackets we’ll respond with 480 Temporarily Unavailable, using sl_reply() (You may remember from the last post that sl_reply sends a reply back to the sender of the message with the response code and text specified) and then exit, meaning we won’t continue executing what’s next in the config.
+
+Finally outside of our if statement (so catching any SIP requests who’s method isn’t INVITE) we’ll respond with 501 “Not Implemented”.
+
+Here we can see our REGISTER message got back a 501 Not Implemented response, while our INVITE got a 480 Temporarily Unavailable response.
 
 # Kamailio
 This tutorial collects the functions and parameters exported by Kamailio core to configuration file.
