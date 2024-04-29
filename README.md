@@ -555,6 +555,43 @@ SIP Requests are answered with SIP responses, of which there are six classes:
 * 5xx = Server errors
 * 6xx = Global failures
 
+#### ds_ping_from (string)
+With this Method you can define the "From:"-Line for the request, sent to the failed gateways. This method is only available, if compiled with the probing of failed gateways enabled.
+
+Default value is “sip:dispatcher@localhost”.
+
+Example 1.21. Set the “ds_ping_from” parameter
+
+...
+modparam("dispatcher", "ds_ping_from", "sip:proxy@sip.somehost.com")
+...
+
+#### ds_mark_dst([state])
+Mark the last used address from destination set as inactive ("i"/"I"), active ("a"/"A"), disabled ("d"/"D") or trying ("t"/"T"). Apart of disabled state, a destination can be set in probing mode by adding ("p"/"P") flag. With this function, an automatic detection of failed gateways can be implemented. When an address is marked as inactive or disabled, it will be ignored by 'ds_select_dst' and 'ds_select_domain'.
+
+The parameter state is optional, when it is missing, then the destination will be marked inactive (i.e., same as 'i').
+
+Possible values for state parameter:
+
+* "a" or "A" - the last destination should be set to active and the error-counter should set to "0".
+* "i" or "I" - the last destination should be set to inactive and will be ignored in future requests.
+* "t" or "T" - the last destination should be set to temporary trying state and failure counter is incremented. When the failure counter reaches the threshold, the destination will be set inactive.
+* "p" and "P" - this has to be used in addition to one of the previous flags - the last destination will be set to probing. This mean the destination will be pinged with SIP OPTIONS requests from time to time to detect if it is up or down.
+
+This function can be used from REQUEST_ROUTE, FAILURE_ROUTE.
+
+Example 1.53. ds_mark_dst usage
+```
+...
+failure_route[tryagain] {
+...
+   if(t_check_status("500"))
+      ds_mark_dst("ip"); # set to inactive and probing
+...
+}
+...
+```
+
 #### ds_probing_threshold (int)
 If you want to set a gateway into inactive mode, there can be a specific number of failed requests until it will change from "active" to "inactive". It is using the state "trying", that allows selection of gateway but indicates there was a failure previously with the gateway. The number of attempts can be set with this parameter. This parameter can be modified via ser config framework.
 
