@@ -1,5 +1,8 @@
 # System Telephony
 
+* [SIP](#sip)
+
+
 # SIP
 ## What is a SIP Header?
 A SIP Header is a component of a SIP message that is used to convey information about the SIP message. Including the correct SIP Header and correctly formatting these SIP Headers is critical to ensure that requests are successfully routed to the right recipients. We'll try and run through some of the most common SIP Headers in this blogpost.
