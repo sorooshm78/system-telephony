@@ -854,6 +854,151 @@ Takes the next destination address from the corresponding XAVPs and sets the dst
 This function can be used from REQUEST_ROUTE, FAILURE_ROUTE
 
 
+### RPC Command
+#### dispatcher.set_state
+Sets the state for a destination address (can be use to mark the destination as active or inactive).
+
+Name: dispatcher.set_state
+
+Parameters:
+
+_state_ : state of the destination address
+* “a”: active
+* “i”: inactive
+* “t”: trying
+* “d”: disabled
+The states “a”, “i” or “t” can be followed by “p” to set probing mode (e.g. 'ap', 'ip' or 'tp').
+
+_group_: destination group id
+
+_address_: address of the destination in the _group_ or 'all' to update all destinations in the group
+
+Example:
+```
+...
+# prototype: kamcmd dispatcher.set_state _state_ _group_ _address_
+kamcmd dispatcher.set_state ip 2 sip:127.0.0.1:5080
+kamcmd dispatcher.set_state ip 3 all
+...
+```
+
+#### dispatcher.set_duid_state
+Sets the state for a destination by matching on 'duid' attribute. The first two parameters 'state' and 'group' are the same like for RPC command 'dispatcher.set_state'. The third parameter 'duid' is the value to be matched against the 'duid' attribute of dispatcher destinations.
+
+Example:
+```
+...
+# prototype: kamcmd dispatcher.set_duid_state _state_ _group_ _duid_
+kamcmd dispatcher.set_duid_state ip 2 xyz
+...
+```
+
+#### dispatcher.list
+Lists the routing groups with destination addresses and corresponding attributes.
+
+Name: dispatcher.list
+
+Parameters:
+
+_rmode_ - (optional) response mode - can be: 'short' to get a shorter version of groups and destinations; 'full' to get more attributes per destination
+
+Example:
+```
+kamcmd dispatcher.list
+...
+DEST: {
+        URI: sip:192.168.0.1:5060
+        FLAGS: AP
+        PRIORITY: 12
+}
+...
+```
+
+FLAGS consist out of 2 letters. First letter describe status of destination: A-active, I â inactive, T â trying, D â disabled. Second letter might be P or X. P is for probing, so AP means destination is active and it is tested by SIP options continuously. X means that there are no probing or sip pinging. So AX means that destination is assumed as active and it is not tested by SIP options. DX respectively is disabled destination that is not tested, etc.
+
+#### dispatcher.reload
+Reloads the groups and included destinations. The command is disabled for call load based dispatching (algorithm 10) since removal of destinations may leave the list of active calls with broken references.
+
+Name: dispatcher.reload
+
+Parameters: none
+
+Example
+```
+kamcmd dispatcher.reload
+```
+
+#### dispatcher.ping_active
+Sets the global state for sending keepalive requests to destinations.
+
+Name: dispatcher.ping_active
+
+Parameters:
+
+_state_ : state of sending keepalives
+
+* “0”: inactive (don't send)
+* “1”: active (send)
+
+If the state parameter is missing, the current state is returned. When state is changed, new and old values of the state are returned. Default value for state is 1.
+
+Example:
+```
+...
+# prototype: kamcmd dispatcher.ping_active _state_
+kamcmd dispatcher.ping_active 0
+...
+```
+
+#### dispatcher.add
+Add a destination address to the in-memory dispatcher list. Reloading the dispatcher will remove any destinations that are only added to the in-memory dispatcher list.
+
+Name: dispatcher.add
+
+Parameters:
+
+_group_: destination group id
+
+_address_: address of the destination in the _group_
+
+_flags_ (optional): as described in the list file format, default 0
+
+_priority_ (optional): as described in the list file format, default 0
+
+_attrs_ (optional): as described in the list file format, default ""
+
+Example:
+```
+...
+# prototype: kamcmd dispatcher.add _group_ _address_ _flags_ _priority_ _attrs_
+kamcmd dispatcher.add 2 sip:127.0.0.1:5080
+kamcmd dispatcher.add 3 sip:127.0.0.1:5075 8
+kamcmd dispatcher.add 3 sip:127.0.0.1:5075 0 0 duid=abc;socket=udp:127.0.0.1:5060
+...
+```
+
+#### dispatcher.remove
+Remove a destination address from the in-memory dispatcher list. Reloading the dispatcher from file or database will re-add destinations that are removed using this command.
+
+This command will remove all entries that match the group and address.
+
+Name: dispatcher.remove
+
+Parameters:
+
+_group_: destination group id
+
+_address_: address of the destination in the _group_
+
+Example:
+```
+...
+# prototype: kamcmd dispatcher.remove _group_ _address_
+kamcmd dispatcher.remove 2 sip:127.0.0.1:5080
+kamcmd dispatcher.remove 3 sip:127.0.0.1:5075;transport=udp
+...
+```
+
 ### Configuration
 ### Parameters
 You’ll need to load the dispatcher module, by adding the below line with the rest of your loadmodules:
