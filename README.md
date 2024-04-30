@@ -11,6 +11,7 @@
         * [CSeq](#cseq)
         * [Max-Forwards](#max-forwards)
         * [Content-Type](#content-type)
+* [PBX](#what-is-pbx-private-brand-exchange)
 * [Kamailio](#kamailio)
     * [what is Kamailio?](#so-what-is-kamailio)
     * [Configuration](#configuration)
@@ -28,7 +29,25 @@
     * [t_relay](#t_relay)
     * [exit](#exit)
     * [Kamailio Module](#kamailio-module)
-* [PBX](#what-is-pbx-private-brand-exchange)
+        * [Mysql Module](#mysql-module)
+        * [Secfilter Module](#secfilter-module)
+            * [Overview](#overview)
+            * [Dependencies](#dependencies)
+            * [Database setup](#database-setup)
+            * [Parameters](#parameters)
+            * [Functions](#functions)
+        * [Dispatcher Module](#dispatcher-module)
+            * [Links](#links)
+            * [Params](#params)
+            * [Functions](#functions-1)
+            * [RPC Command](#rpc-command)
+            * [Destination Selection Algorithm](#destination-selection-algorithm)
+            * [Managing Failure](#managing-failure)
+        * [Ctl Module](#ctl-module)
+            * [Params](#params-1)
+            
+        
+
 
 
 # SIP
@@ -1179,7 +1198,7 @@ DEST: {
 ...
 ```
 
-FLAGS consist out of 2 letters. First letter describe status of destination: A-active, I â inactive, T â trying, D â disabled. Second letter might be P or X. P is for probing, so AP means destination is active and it is tested by SIP options continuously. X means that there are no probing or sip pinging. So AX means that destination is assumed as active and it is not tested by SIP options. DX respectively is disabled destination that is not tested, etc.
+FLAGS consist out of 2 letters. First letter describe status of destination: A-active, (I) inactive, (T) trying, (D) disabled. Second letter might be P or X. P is for probing, so AP means destination is active and it is tested by SIP options continuously. X means that there are no probing or sip pinging. So AX means that destination is assumed as active and it is not tested by SIP options. DX respectively is disabled destination that is not tested, etc.
 
 #### dispatcher.reload
 Reloads the groups and included destinations. The command is disabled for call load based dispatching (algorithm 10) since removal of destinations may leave the list of active calls with broken references.
