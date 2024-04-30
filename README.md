@@ -12,6 +12,24 @@
         * [Max-Forwards](#max-forwards)
         * [Content-Type](#content-type)
 * [Kamailio](#kamailio)
+    * [what is Kamailio?](#so-what-is-kamailio)
+    * [Configuration](#configuration)
+    * [Request Route](#the-request_route-block)
+    * [SIP Register](#sip-registrar)
+    * [Table Script](#table-sql-script)
+    * [Structure](#structure)
+    * [Global Parameters Section](#global-parameters-section)
+    * [Modules Settings Section](#modules-settings-section)
+    * [Routing Blocks Section](#routing-blocks-section)
+    * [Structure](#)
+    * [xlog](#xlog)
+    * [sl_reply](#sl_reply)
+    * [lookup](#lookup)
+    * [t_relay](#t_relay)
+    * [exit](#exit)
+    * [Kamailio Module](#kamailio-module)
+* [PBX](#what-is-pbx-private-brand-exchange)
+
 
 # SIP
 ## What is a SIP Header?
@@ -495,6 +513,7 @@ branch_route[MANAGE_BRANCH] {
 }
 ```
 
+# Kamailio Module
 ## Mysql Module
 This is a module which provides MySQL connectivity for Kamailio. It implements the DB API defined in Kamailio.
 
