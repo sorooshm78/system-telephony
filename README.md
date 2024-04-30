@@ -306,8 +306,135 @@ Finally outside of our if statement (so catching any SIP requests who’s method
 
 Here we can see our REGISTER message got back a 501 Not Implemented response, while our INVITE got a 480 Temporarily Unavailable response.
 
-# Kamailio
-This tutorial collects the functions and parameters exported by Kamailio core to configuration file.
+## SIP Registrar
+As we talked about in the post on SIP Registrars, SIP Registrars take the REGISTER requests from SIP endpoints and store their contact details in the form of an Address on Record (AoR). This AoR contains the URI and the endpoints’ current IP it just sent the REGISTER message from.
+
+The primary use of this is it allow us to know how to reach people. It’s kind of like an address book for mapping current IP against a SIP URI, as IP Addresses of SIP endpoints may change often.
+
+So our Kamailio instance is going to receive an REGISTER message, store the Contact as an address on record, and respond 200 OK. Let’s build upon the config we started with in the last tutorial:
+
+```
+/* Main SIP request routing logic
+ * - processing of any incoming SIP request starts with this route
+ * - note: this is the same as route { ... } */
+request_route {
+        if(method=="INVITE"){
+                sl_reply("480", "Temporarily Unavailable");
+                exit;
+        }
+        sl_reply("501", "Not Implemented");
+}
+```
+
+So let’s add an if statement to manage REGISTER messages, and save their location:
+
+```
+/* Main SIP request routing logic
+ * - processing of any incoming SIP request starts with this route
+ * - note: this is the same as route { ... } */
+request_route {
+        if(method=="INVITE"){
+                sl_reply("480", "Temporarily Unavailable");
+                exit;
+        }
+        if(method=="REGISTER"){
+                save("location");
+                exit;
+        }
+        sl_reply("501", "Not Implemented");
+}
+```
+So we’ve added an IF statement to find if the SIP method is a REGISTER message, and if it is, we’ll call the save(“location”); function.
+
+The save() function saves the Contact address we just received to a database (in this case one in memory) in the form of a SIP URI and current Contact location, these two bits of info combined are known as an address on record (AoR) and the save function, if successful, responds with a 200 OK automatically.
+
+So that’s it – Our SIP endpoint is happy and by calling the save(“location”) we’ve called the built in function to store the Contact as an Address on Record and respond with 200 OK.
+
+So how do we access this information and what can we do with it?
+
+Kamailio comes with two tools for accessing Kamailio while it’s running. In this example we’ll use kamcmd to check what’s registered on our system. After we’ve seen a device register, from command line we’ll run:
+
+```
+kamcmd ul.dump
+```
+
+This calls kamcmd the Kamailio command line tool, and calls the ul.dump function. ul is short for userloc – The module for user location management, and dump outputs all the contents of the userloc table.
+
+![](https://nickvsnetworking.com/wp-content/uploads/2018/12/image-12.png)
+
+## First Call
+So now we’ve got Kamailio handling REGISTER traffic, and we know what IPs endpoints are on, so let’s join this together and let’s route a call between two endpoints via our Proxy!
+
+We’ll work on the config we were working on in the previous tutorial:
+
+```
+/* Main SIP request routing logic
+ * - processing of any incoming SIP request starts with this route
+ * - note: this is the same as route { ... } */
+request_route {
+        if(method=="INVITE"){
+                sl_reply("480", "Temporarily Unavailable");
+                exit;
+        }
+        if(method=="REGISTER"){
+                save("location");
+                exit;
+        }
+        sl_reply("501", "Not Implemented");
+}
+```
+
+Let’s change how we handle the INVITE messages in our if(method==”INVITE”) block so instead of responding with a 480 Unavailable response, let’s lookup the location we saved if it was a REGISTER and forward the INVITE to the IP we’ve got.
+```
+if(method=="INVITE"){
+        lookup("location");
+        t_relay();
+        exit();
+}
+```
+
+Let’s break down each of the new functions we’ve introduced:
+
+
+### lookup(“location”);
+In the last post we introduced save(“location”); which saves an Address on Record for the URI. lookup(“location”); looks up the IP address of the URI we’re after in the Address on Record table we wrote to with our save(“location”); call and automatically sets it as the destination IP of where we’re going to send the message.
+
+When a user registered via a SIP REGISTER request, we saved their details, now we’re looking them up.
+
+You could even replace the lookup(“location”) call with say a SQL lookup on an address book, and save the output to the IP the INVITE will be forwarded to, but lookup(“location”); does this it all in one function.
+
+### t_relay();
+t_relay is transactional relay function. By transactional it means Kamailio remembers this session next time it’s referenced, we’ll touch upon transaction aware / stateful SIP proxies later, but for now what you need to know is it forwards the INVITE we just received to the address we got from our lookup(“location”).
+
+### exit();
+Exit bails out so we won’t keep processing after that, it doesn’t just bail out of our current conditional but stops processing this request further. Without it we’d still go on and send the 501 Not Implemented reply.
+
+## **SIP Basics**:
+   - SIP is a protocol used for initiating, maintaining, modifying, and terminating real-time communication sessions over IP networks. It's widely used for voice and video calls, instant messaging, and other multimedia applications.
+   - SIP operates through a series of **methods** (requests) and corresponding **responses**.
+
+## **SIP Methods**:
+   - SIP requests are sent by the **User Agent Client (UAC)** to establish and manage sessions.
+   - The first six basic SIP request methods are:
+     - **INVITE**: Initiates a session (e.g., when you make a call).
+     - **ACK**: Confirms an INVITE request.
+     - **BYE**: Ends a session (hangs up the call).
+     - **CANCEL**: Cancels the establishment of a session.
+     - **REGISTER**: Communicates user location (host name, IP).
+     - **OPTIONS**: Provides information about the capabilities of the calling and receiving SIP devices.
+
+## **The "Trying" Response**:
+   - When you initiate a call (send an INVITE request), the **User Agent Server (UAS)** receives it.
+   - The UAS responds with a **provisional response** called **"100 Trying"**.
+   - This response indicates that the call setup process is underway. It doesn't confirm success or failure; it's simply an acknowledgment that the request is being processed.
+   - After the "100 Trying," the UAS may send a final response (e.g., "200 OK" for a successful call setup).
+
+## **Example Scenario**:
+   - Imagine you're calling a friend. Here's how it works:
+     - You (UAC) send an INVITE to your friend (UAS).
+     - Your friend's device responds with "100 Trying" to let you know they're processing the call.
+     - If your friend accepts the call, they'll send a final "200 OK" response, and the call is established.
+
 
 ## Table Sql Script
 [sql script](https://github.com/kamailio/kamailio/blob/master/utils/kamctl/mysql)
