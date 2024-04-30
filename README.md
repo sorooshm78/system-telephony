@@ -34,7 +34,7 @@
             * [Overview](#overview)
             * [Dependencies](#dependencies)
             * [Database setup](#database-setup)
-            * [Parameters](#parameters)
+            * [Params](#parameters)
             * [Functions](#functions)
         * [Dispatcher Module](#dispatcher-module)
             * [Links](#links)
