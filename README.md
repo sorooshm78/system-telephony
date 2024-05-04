@@ -473,6 +473,112 @@ Exit bails out so we won’t keep processing after that, it doesn’t just bail 
      - If your friend accepts the call, they'll send a final "200 OK" response, and the call is established.
 
 
+Kamailio allows you to deal with all these problems yourself, writing your own routing blocks, but it also comes with a bunch of useful routing blocks in the [example config](https://github.com/kamailio/kamailio/blob/master/etc/kamailio.cfg), that we can re-use so we don’t need to specify how to manage every little thing ourselves – unless we want to.
+
+So lets add some of these useful routing blocks,
+
+We’ll add this at the start of our request_route{ block
+```
+request_route {
+
+        if (is_method("CANCEL")) {
+                if (t_check_trans()) {
+                        route(RELAY);
+                }
+                exit;
+        }
+
+
+        if (!is_method("ACK")) {
+                if(t_precheck_trans()) {
+                        t_check_trans();
+                        exit;
+                }
+                t_check_trans();
+        }
+
+        # handle requests within SIP dialogs
+        route(WITHINDLG);
+```
+
+So now our config looks like this:
+
+```
+request_route {
+        if (is_method("CANCEL")) {
+                if (t_check_trans()) {
+                        route(RELAY);
+                }
+                exit;
+        }
+
+
+        if (!is_method("ACK")) {
+                if(t_precheck_trans()) {
+                        t_check_trans();
+                        exit;
+                }
+                t_check_trans();
+        }
+
+        # handle requests within SIP dialogs
+        route(WITHINDLG);
+
+
+        if(method=="INVITE"){
+            if(!lookup("location")){
+                            sl_reply("404", "User not Registered");
+                            exit;
+            }
+
+            lookup("location");
+            t_relay();
+            exit();
+        }
+
+
+        if(method=="REGISTER"){
+                save("location");
+                exit;
+        }
+        xlog("No idea how to respond to method $rm");
+        sl_reply("501", "Not Implemented");
+}
+```
+
+As you can see we’ve added an if statement to match if the method is CANCEL or ACK, and referenced some routing blocks:
+
+* route(RELAY);
+* route(WITHINDLG);
+
+## t_check_trans()
+t_check_trans() can be used to quickly check if a message belongs or is related to a transaction. It behaves differently for different types of messages:
+
+* For a SIP Reply it returns true if the reply belongs to an existing transaction and false otherwise.
+* For a CANCEL it behaves exactly as t_lookup_cancel(): returns true if a corresponding INVITE transaction exists for the CANCEL and false otherwise.
+* For ACKs to negative replies or for ACKs to local transactions it will terminate the script if the ACK belongs to a transaction (it would make very little sense to process an ACK to a negative reply for an existing transaction in some other way then to simply pass it to tm) or return false if not.
+* For end-to-end ACKs (ACKs to 2xx responses for forwarded INVITE transactions) it will return true if the corresponding INVITE transaction is found and still
+active and false if not
+
+## t_precheck_trans()
+Check if current processed message is handled by other process. This function is useful to catch retransmissions before transaction is created. The function returns true if the request is handled by another process.
+
+Note that ACK and CANCEL requests are not tracked by this function, the return code being false for them.
+
+This function can be used from REQUEST_ROUTE .
+
+Example 1.15. t_precheck_trans usage
+```
+...
+# handle retransmissions
+if(t_precheck_trans()) {
+t_check_trans();
+exit;
+}
+t_check_trans();
+...
+```
+
 ## Table Sql Script
 [sql script](https://github.com/kamailio/kamailio/blob/master/utils/kamctl/mysql)
 
