@@ -1675,6 +1675,74 @@ failure_route[1] {
 ...
 ```
 
+[dispatcher explain 10 algorithm](https://www.kwancro.com/post/kamailio-dispatcher-module-hidden-gem/)
+
+## Routing based on call load distribution
+Imagine having to route calls to 30 media gateways but also ensuring that the number of calls across all of them is evenly maintained. Some have come up with solutions where a frequent query for call volume is sent to the media gateways and the results are stored and used to make routing decisions. Smart, but there are too many moving parts. Also, the routing decision based on call volume is as close to real time as the frequency of the gateway queries.
+
+With call load distribution set as the algorithm in the dispatcher module, Kamailio can keep track of the calls (by call-ID) routed to the gateways. The gateway call volume will then be maintained through the configuration file by tracking each INVITE, BYE, CANCEL, positive and negative response code received. The beauty of this is that it does not have to be aware of call dialogs so is really lightweight.
+
+## Setup
+1. Set unique gateway IDs (duid)
+Each gateway in the dispatcher table must have its own unique id called duid. This id is populated in the attribute (attrs) column of the dispatcher table. An example table of 3 gateways with druids of 1015, 1016 and 1017 would look like this:
+
+```
++-----+--------+------------------+-------+----------+-----------+---------------+
+| id  | setid  | destination      | flags | priority | attrs     | description   |
++-----+--------+------------------+-------+----------+-----------+---------------+
+|  10 |  100   | sip:192.68.10.15 |     0 |       50 | duid=1015 |  gateway-01   |
+|  11 |  100   | sip:192.68.10.16 |     0 |       50 | duid=1016 |  gateway-02   |
+|  12 |  100   | sip:192.68.10.17 |     0 |       50 | duid=1017 |  gateway-03   |
++-----+--------+------------------+-------+----------+-----------+---------------+
+```
+
+2. Enable dispatcher to route calls to media gateways
+In your configuration logic you can route calls to the gateways like this:
+
+```
+if(!ds_select_dst("100", "10")) {
+    send_reply("404", "No destination");
+    Exit;
+}
+```
+
+3. Track calls
+After sending the call to the gateway, in our configuration file we now have to make sure we keep track of the call and update the call load status of the gateway. The idea of how to go about tracking the calls can be split in 2 steps. Tracking a successful call attempt and tracking a failed call attempt.
+
+ds_load_update() is the function used to track successful call attempts. We will call it when:
+* we get a positive response (200 - 299) for the INVITE we sent to a gateway, update internal tracking as call confirmed
+* we receive a BYE or CANCEL , update gateway load tracker
+
+ds_load_unset() is the function for tracking failed call attempts. We will call it when:
+* we receive a negative response code (300 - 799) then clear that call attempt from the gateway tracker.
+Using th functions in the config file it would look something like this:
+
+In the main route:
+```
+route {
+    ...
+	if(is_method("BYE|CANCEL"))
+        ds_load_update();
+    ...
+}
+In the onreply_route:
+
+onreply_route {
+    ...
+    if(is_method("INVITE")
+	{
+        if(status=~"2[0-9][0-9]")
+            ds_load_update();
+        else if(status=~"[3-7][0-9][0-9]")
+            ds_load_unset();
+    }
+    ...
+}
+```
+
+And that is it. With this in place, the load on the gateways will always be evenly spread.
+
+The latest dispatcher module documentation is quite detailed with options and example code and would definitely recommend reading it.
 
 # Ctl Module
 This module implements the binrpc transport interface for Kamailio RPCs. It supports various transports over which it speaks binrpc: Unix datagram sockets, Unix stream sockets, UDP and TCP. It also supports a backward compatible FIFO interface (using the old Kamailio FIFO protocol).
