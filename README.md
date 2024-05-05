@@ -894,25 +894,65 @@ if (is_method("INVITE")) {
 * [nickvsnetworking.com](https://nickvsnetworking.com/kamailio-dispatcher/)
 
 ### Tables
+[standard](https://github.com/kamailio/kamailio/blob/master/utils/kamctl/mysql/standard-create.sql)
+```
+CREATE TABLE `version` (
+    `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    `table_name` VARCHAR(32) NOT NULL,
+    `table_version` INT UNSIGNED DEFAULT 0 NOT NULL,
+    CONSTRAINT table_name_idx UNIQUE (`table_name`)
+);
+
+INSERT INTO version (table_name, table_version) values ('version','1');
+```
+
+[Dispatcher](https://github.com/kamailio/kamailio/blob/master/utils/kamctl/mysql/dispatcher-create.sql)
+```
+CREATE TABLE `dispatcher` (
+    `id` INT(10) UNSIGNED AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    `setid` INT DEFAULT 0 NOT NULL,
+    `destination` VARCHAR(192) DEFAULT '' NOT NULL,
+    `flags` INT DEFAULT 0 NOT NULL,
+    `priority` INT DEFAULT 0 NOT NULL,
+    `attrs` VARCHAR(128) DEFAULT '' NOT NULL,
+    `description` VARCHAR(64) DEFAULT '' NOT NULL
+);
+
+INSERT INTO version (table_name, table_version) values ('dispatcher','4');
+```
+
+
+![](https://nickvsnetworking.com/wp-content/uploads/2019/01/dispatcher-kamctl.png)
+
+[dispatcher table schema](https://kamailio.org/docs/db-tables/kamailio-db-4.3.x.html#idp15170408)
+
+
+#### Fields
+Each destination point must be on one line. First token is the **set id** (an integer value, also referenced by group id), followed by **destination address** (string value in full SIP URI format).
+
+Optionally, these fields can be followed by:
+
+**flags** - control the mode of using the destination address and sending keepalives. It is a bitwise value that can be built using the following flags:
+* 1 (bit at index 0 - 1 <<0) - inactive destination
+* 2 (bit at index 1 - 1 <<1) - temporary trying destination (in the way to become inactive if it does not reply to keepalives - there is a module parameter to set the threshold of failures)
+* 4 (bit at index 2 - 1 <<2) - admin disabled destination
+* 8 (bit at index 3 - 1 <<3) - probing destination (sending keep alives);
+* 16 (bit at index 4 - 1 <<4) - skip DNS A/AAAA resolve at startup, useful when the hostname of the destination address is a NAPTR or SRV record only. Such addresses cannot be matched anymore with ds_is_from_list(...).
+
+**priority**: sets the priority in destination list (based on it is done the initial ordering inside the set)
+
+**attributes**: extra fields in form of name1=value1;...;nameN=valueN.
 
 #### Special Attributes
 There are some predefined names:
 * 'duid' - used for call load dispatching. It must be an unique value to identify a destination (gateway address). Practically the load within the group is associated with this value.>
-
 * 'maxload' - used for call load dispatching. It must be a positive integer, defining the upper limit of active calls per destination. When the limit is reached, then the gateway is no longer selected for new calls until an exiting call via that gateway is terminated. If set to 0, then no active call limit is used.>
-
 * 'weight' - used for weight based load distribution. It must be set to a positive integer value between 1 and 100 (inclusive the limits), otherwise the destination address is ignored (its weight set to 0). The value represents the percent of calls to be sent to that gateways. The sum must not exceed 100, otherwise the destinations whose weight added to the sum go over 100 are ignored. If the sum is less than 100, then the last destination is used to fill the missing percentage. See also the description of the corresponding algorithm parameter for ds_select_dst().
-
 * 'rweight' - used for relative weight based load distribution. It must be set to a positive integer value between 1 and 100 (inclusive the limits) otherwise host will be excluded from relative weight distribution type - its rweight is set to 0. See also the description of the corresponding algorithm parameter for ds_select_dst().
-
 * 'socket' - used to set the sending socket for the gateway. It is used for sending the SIP traffic as well as OPTIONS keepalives.
-
 * 'sockname' - used to set by name the sending socket for the gateway. It is used for sending the SIP traffic as well as OPTIONS keepalives and has priority over 'socket' attribute.
-
 * 'ping_from' - used to set the From URI in OPTIONS keepalives. It overwrites the general ds_ping_from parameter.
-
 * 'obproxy' - SIP URI of outbound proxy to be used when sending pings. It overwrites the general ds_outbound_proxy parameter.
-
 * 'latency' - latency_stats initialization in ms.
 
 ### Params
