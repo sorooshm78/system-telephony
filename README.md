@@ -893,6 +893,28 @@ if (is_method("INVITE")) {
 * [kamailio.org](https://www.kamailio.org/docs/modules/devel/modules/dispatcher.html)
 * [nickvsnetworking.com](https://nickvsnetworking.com/kamailio-dispatcher/)
 
+### Tables
+
+#### Special Attributes
+There are some predefined names:
+* 'duid' - used for call load dispatching. It must be an unique value to identify a destination (gateway address). Practically the load within the group is associated with this value.>
+
+* 'maxload' - used for call load dispatching. It must be a positive integer, defining the upper limit of active calls per destination. When the limit is reached, then the gateway is no longer selected for new calls until an exiting call via that gateway is terminated. If set to 0, then no active call limit is used.>
+
+* 'weight' - used for weight based load distribution. It must be set to a positive integer value between 1 and 100 (inclusive the limits), otherwise the destination address is ignored (its weight set to 0). The value represents the percent of calls to be sent to that gateways. The sum must not exceed 100, otherwise the destinations whose weight added to the sum go over 100 are ignored. If the sum is less than 100, then the last destination is used to fill the missing percentage. See also the description of the corresponding algorithm parameter for ds_select_dst().
+
+* 'rweight' - used for relative weight based load distribution. It must be set to a positive integer value between 1 and 100 (inclusive the limits) otherwise host will be excluded from relative weight distribution type - its rweight is set to 0. See also the description of the corresponding algorithm parameter for ds_select_dst().
+
+* 'socket' - used to set the sending socket for the gateway. It is used for sending the SIP traffic as well as OPTIONS keepalives.
+
+* 'sockname' - used to set by name the sending socket for the gateway. It is used for sending the SIP traffic as well as OPTIONS keepalives and has priority over 'socket' attribute.
+
+* 'ping_from' - used to set the From URI in OPTIONS keepalives. It overwrites the general ds_ping_from parameter.
+
+* 'obproxy' - SIP URI of outbound proxy to be used when sending pings. It overwrites the general ds_outbound_proxy parameter.
+
+* 'latency' - latency_stats initialization in ms.
+
 ### Params
 #### ds_ping_interval (int)
 With this parameter you can define the interval for sending a request to a gateway marked as inactive upon a failed request routing to it. This parameter is only used, when the TM-Module is loaded. If set to “0”, the pinging of inactive gateway is disabled.
