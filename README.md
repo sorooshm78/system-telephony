@@ -1126,6 +1126,20 @@ modparam("dispatcher", "ds_probing_mode", 1)
 ...
 ```
 
+#### flags (int)
+Various flags that affect dispatcher's behaviour. The flags are defined as a bitmask on an integer value. If flag 1 is set only the username part of the URI will be used when computing an URI based hash. If no flags are set the username, hostname and port will be used. The port is used only if different from 5060 (normal sip URI) or 5061 (in the sips: case).
+
+If flag 2 is set, then failover support is enabled. The functions exported by the module will store the rest of addresses from the destination set in XAPVs, and use these XAVPs to try next address if the current-tried destination fails.
+
+Default value is “0”.
+
+Example 1.10. Set the “flags” parameter
+```
+...
+modparam("dispatcher", "flags", 3)
+...
+```
+
 #### ds_retain_latency_stats (int)
 Retain latency stats for existing destinations when reloading from file or database.
 
@@ -1621,12 +1635,19 @@ if(method=="INVITE"){
 
 And the failure route:
 ```
-route[DISPATCH_FAILURE]{
+failure_route[DISPATCH_FAILURE]{
+        ds_mark_dst("ip");
         xlog("Trying next destination");
         ds_next_dst();
         route(RELAY);
 }
 ```
+
+flag 2 is set, then failover support is enabled
+...
+modparam("dispatcher", "flags", 2)
+...
+
 
 ds_next_dst() gets the next available destination from dispatcher. Let’s see how this looks in practice:
 
