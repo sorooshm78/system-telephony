@@ -647,7 +647,7 @@ SQL injection is a fun example, but more common examples could include not check
 
 Luckily again the Kamailio team have covered this before, Kamailio comes with a module for handling a lot of the common threats.
 
-With the boilerplate routes we talked about in the last tutorial all you have to do is add route(REQINIT); at the start of your routing block and you’ll get:
+With the boilerplate routes we talked about in the last tutorial all you have to do is add **route(REQINIT);** at the start of your routing block and you’ll get:
 
 * Dodgy UA filtering (You may want to add your own)
 * Basics of Flood Prevention (if you want it)
