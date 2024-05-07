@@ -579,6 +579,82 @@ t_check_trans();
 ...
 ```
 
+## Security in Theory
+In this series we’ll ultimately end up with a basic PBX with the ability to make and receive calls between registered users and via trunks from a carrier.
+
+Soon we’ll add the ability to call numbers not registered on our system (trunks) to our system, but now is a good time to talk about securing your system, as the threat of toll fraud is very real, as well as calls from random devices waking you up in the middle of the night.
+
+VoIP security is a big topic, there’s a whole lot of wrong ways to do things, so think before you do.
+
+## Authentication, Authorisation and Accounting
+Most telephony platforms employ some form of AAA, it’s a good minimum starting point for our system to ensure we Authenticate traffic, to make sure it is who it claims to be, we Authorise traffic to make sure it’s allowed to traverse this part of the network and use theses resources, and finally we’ll Account for resources used, for example recording CDRs and cost for the services used.
+
+## Authentication
+Authentication in this example we’ll using the Challenge / Response based authentication for traffic from users (Such as REGISTER and INVITE messages), as [shown in this example](https://tools.ietf.org/html/rfc3665#section-2.1).
+
+When we get an INVITE or a REGISTER from a user, we’ll check their username / password matches what we’ve got on record.
+
+For this we’ll use Kamailio’s [Auth_DB](https://www.kamailio.org/docs/modules/devel/modules/auth_db.html) module.
+
+## Authorization
+We’ll use IP Address authorisation for inbound traffic from carriers (so we can make sure that we’ll only allow calls from carriers, not just any IP on the internet sending INVITES).
+
+This means when we get an INVITE from a Carrier to send us an inbound call, we’ll make sure it’s from the Carrier’s IP address before we start our user’s phones ringing.
+
+For this we’ll use Kamailio’s [Permissions](https://www.kamailio.org/docs/modules/devel/modules/permissions.html) module.
+
+## Accounting
+We’ll skip Accounting for now as we’re not going to be charging users at this stage.
+
+Kamailio has the [Accounting](https://www.kamailio.org/docs/modules/devel/modules/acc.html) module you can use for this, which we’ll talk about another day.
+
+## Traffic Validation
+Now’s probably a good time to talk about validating your traffic in the wild west world that is the internet.
+
+Let’s say we implement a database lookup in Kamailio to take the To part of the Request URI and lookup where to route it, we receive something like:
+
+```
+INVITE sip:1234567@example.com
+```
+
+So we’ve got that and we lookup 1234567 in our database and get where we need to route it to:
+
+```
+SELECT 'forward_destination' FROM 'imaginary_route_database' WHERE 'dialed_number' = '1234567';
+```
+
+Seems harmless enough right?
+
+Now imagine someone sends an INVITE that looks like this:
+
+```
+INVITE sip:'; DROP TABLE *;@example.com
+```
+
+Now let’s look at how our SQL query would look:
+
+```
+SELECT 'forward_destination' FROM 'imaginary_route_database' WHERE 'dialed_number' = ''; 
+DROP TABLE *; 
+'';
+```
+
+And suddenly we find all our tables have been deleted.
+
+So it’s important we filter everything, and make sure the traffic is valid.
+
+SQL injection is a fun example, but more common examples could include not checking the Max Forwards header and looping packets out and back in infinitely (imagine no spanning tree and plugging a switch into itself) and not responding to known bad user agents like sipcli and sipvicious.
+
+Luckily again the Kamailio team have covered this before, Kamailio comes with a module for handling a lot of the common threats.
+
+With the boilerplate routes we talked about in the last tutorial all you have to do is add route(REQINIT); at the start of your routing block and you’ll get:
+
+* Dodgy UA filtering (You may want to add your own)
+* Basics of Flood Prevention (if you want it)
+* max_forward checking (for handling routing loops)
+* OPTIONS response handling
+* Sanity checking
+
 ## Table Sql Script
 [sql script](https://github.com/kamailio/kamailio/blob/master/utils/kamctl/mysql)
 
