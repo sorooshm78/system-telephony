@@ -45,7 +45,7 @@
             * [Managing Failure](#managing-failure)
         * [Ctl Module](#ctl-module)
             * [Params](#params-1)
-            
+* [sipp](#sipp)            
         
 
 
@@ -1907,3 +1907,94 @@ modparam("ctl", "binrpc", "tcp:localhost:8000")
 ```
 kamcmd -s tcp:<IP>:8000 <Kamcmd_Command>
 ```
+
+# sipp
+## Main features
+SIPp allows to generate one or many SIP calls to one remote system. The tool is started from the command line. In this example, two SIPp are started in front of each other to demonstrate SIPp capabilities.
+
+Run sipp with embedded server (uas) scenario:
+
+```
+# ./sipp -sn uas
+```
+
+On the same host, run sipp with embedded client (uac) scenario:
+```
+# ./sipp -sn uac 127.0.0.1
+```
+
+## Integrated scenarios
+Integrated scenarios? Yes, there are scenarios that are embedded in SIPp executable. While you can create your own custom SIP scenarios (see how to create your own XML scenarios), a few basic (yet useful) scenarios are available in SIPp executable.
+
+### UAC
+Scenario file: uac.xml
+```
+SIPp UAC            Remote
+    |(1) INVITE         |
+    |------------------>|
+    |(2) 100 (optional) |
+    |<------------------|
+    |(3) 180 (optional) |
+    |<------------------|
+    |(4) 200            |
+    |<------------------|
+    |(5) ACK            |
+    |------------------>|
+    |                   |
+    |(6) PAUSE          |
+    |                   |
+    |(7) BYE            |
+    |------------------>|
+    |(8) 200            |
+    |<------------------|
+```
+
+### UAC with media
+Scenario file: uac_pcap.xml
+```
+SIPp UAC            Remote
+    |(1) INVITE         |
+    |------------------>|
+    |(2) 100 (optional) |
+    |<------------------|
+    |(3) 180 (optional) |
+    |<------------------|
+    |(4) 200            |
+    |<------------------|
+    |(5) ACK            |
+    |------------------>|
+    |                   |
+    |(6) RTP send (8s)  |
+    |==================>|
+    |                   |
+    |(7) RFC2833 DIGIT 1|
+    |==================>|
+    |                   |
+    |(8) BYE            |
+    |------------------>|
+    |(9) 200            |
+    |<------------------|
+```
+
+### UAS
+Scenario file: uas.xml
+```
+Remote              SIPp UAS
+    |(1) INVITE         |
+    |------------------>|
+    |(2) 180            |
+    |<------------------|
+    |(3) 200            |
+    |<------------------|
+    |(4) ACK            |
+    |------------------>|
+    |                   |
+    |(5) PAUSE          |
+    |                   |
+    |(6) BYE            |
+    |------------------>|
+    |(7) 200            |
+    |<------------------|
+```
+
+## Create your own XML scenarios
