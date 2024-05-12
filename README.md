@@ -2049,3 +2049,9 @@ Description:	Remote IP address, as passed on the command line.
         scenario file.  Several CSV files can be used simultaneously (syntax: -inf
         f1.csv -inf f2.csv ...)
 
+* -r  : Set the call rate (in calls per seconds).  This value can bechanged during
+        test by pressing '+', '_', '*' or '/'. Default is 10.
+        pressing '+' key to increase call rate by 1 * rate_scale,
+        pressing '-' key to decrease call rate by 1 * rate_scale,
+        pressing '*' key to increase call rate by 10 * rate_scale,
+        pressing '/' key to decrease call rate by 10 * rate_scale.
