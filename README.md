@@ -2026,3 +2026,26 @@ Description:	Remote IP address, as passed on the command line.
 ### [remote_port]
 * Default:	5060
 * Description:	Remote IP port, as passed on the command line. You can add a computed offset   remote_port+3 to this value.
+
+## Options
+* -sf : Loads an alternate XML scenario file.  To learn more about XML scenario
+        syntax, use the -sd option to dump embedded scenarios. They contain all the
+
+* -sn : Use a default scenario (embedded in the SIPp executable). If this option is
+        omitted, the Standard SipStone UAC scenario is loaded.
+        Available values in this version:
+
+        * 'uac'      : Standard SipStone UAC (default).                                                                           
+        * 'uas'      : Simple UAS responder.
+        * 'regexp'   : Standard SipStone UAC - with regexp and variables.
+        * 'branchc'  : Branching and conditional branching in scenarios - client.
+        * 'branchs'  : Branching and conditional branching in scenarios - server.
+
+* -inf : Inject values from an external CSV file during calls into the scenarios.
+        First line of this file say whether the data is to be read in sequence
+        (SEQUENTIAL), random (RANDOM), or user (USER) order.
+        Each line corresponds to one call and has one or more ';' delimited data
+        fields. Those fields can be referred as [field0], [field1], ... in the xml
+        scenario file.  Several CSV files can be used simultaneously (syntax: -inf
+        f1.csv -inf f2.csv ...)
+
