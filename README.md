@@ -2055,3 +2055,53 @@ Description:	Remote IP address, as passed on the command line.
         pressing '-' key to decrease call rate by 1 * rate_scale,
         pressing '*' key to increase call rate by 10 * rate_scale,
         pressing '/' key to decrease call rate by 10 * rate_scale.
+
+
+* -rp : Specify the rate period for the call rate.  Default is 1 second and default
+        unit is milliseconds.  This allows you to have n calls every m milliseconds
+        (by using -r n -rp m).
+        Example: -r 7 -rp 2000 ==> 7 calls every 2 seconds.
+        -r 10 -rp 5s => 10 calls every 5 seconds.
+
+```
+# -r 5 -rp 1s
+0 ---1s--- 5 ---1s--- 10 ---1s--- 15 ---1s--- 20 ...
+```
+
+
+* -rate_scale : Control the units for the '+', '-', '*', and '/' keys.
+
+* -rate_increase : Specify the rate increase every -rate_interval units (default is seconds).
+                This allows you to increase the load for each independent logging period.
+                Example: -rate_increase 10 -rate_interval 10s
+                ==> increase calls by 10 every 10 seconds.
+
+* -rate_max  : If -rate_increase is set, then quit after the rate reaches this value.
+                Example: -rate_increase 10 -rate_max 100
+                ==> increase calls by 10 until 100 cps is hit.
+
+* -rate_interval : Set the interval by which the call rate is increased. Defaults to the value
+                of -fd.
+
+```
+# -rate_increase 10 -rate_interval 1s 
+1s -> 0+10=10
+2s -> +10+10=20
+3s -> +20+10=30
+4s -> +30+10=40
+5s -> +40+10=50
+
+0 ---1s--- 10 ---1s--- 30 ---1s--- 60 ---1s--- 100 ---1s--- 150
+```
+
+
+* -no_rate_quit : If -rate_increase is set, do not quit after the rate reaches -rate_max.
+
+* -l    : Set the maximum number of simultaneous calls. Once this limit is reached,
+        traffic is decreased until the number of open calls goes down. Default:
+        (3 * call_duration (s) * rate).
+
+* -m  : Stop the test and exit when 'calls' calls are processed
+
+* -users : Instead of starting calls at a fixed rate, begin 'users' calls at startup,
+        and keep the number of calls constant.
