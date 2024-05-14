@@ -707,12 +707,6 @@ route[REQINIT] {
 ```
 
 
-
-
-
-
-
-
 ## Table Sql Script
 [sql script](https://github.com/kamailio/kamailio/blob/master/utils/kamctl/mysql)
 
