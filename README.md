@@ -706,6 +706,28 @@ route[REQINIT] {
 
 ```
 
+### set_forward_no_connect
+The message will be forwarded only if there is already an existing connection to the destination. It applies only to connection oriented protocols like TCP and TLS (TODO: SCTP), for UDP it will be ignored. The behavior depends in which route block the function is called:
+
+* normal request route: affects stateless forwards and tm. For tm it affects all the branches and the possible retransmissions (in fact there are no retransmission for TCP/TLS).
+
+* it applies specifically to connection-oriented protocols like TCP and TLS (and potentially SCTP, although that’s still a TODO).
+Here’s what it means:
+  * Imagine you have a message (like a SIP request) that you want to forward to a destination (another server or client).
+  * With set_forward_no_connect, the message will be forwarded only if there is already an existing connection to   that destination.
+  * In other words, if there’s no active connection, the message won’t be forwarded.
+  * However, for UDP, this setting is ignored because UDP is connectionless.
+
+So, think of it like this: set_forward_no_connect ensures that the message takes the existing “road” (connection) to reach its destination
+
+set_forward_no_connect in a straightforward way:
+* What Is It?
+  * Imagine you’re sending a letter (a SIP message) to a friend (a destination).
+  * Now, your friend lives in a house (server or client).
+  * The set_forward_no_connect setting is like saying, “Hey, if there’s already a road (connection) to your friend’s house, use it to deliver the letter.”
+  * But if there’s no road (no existing connection), the letter won’t be forwarded.
+  * This concept applies mainly to protocols like TCP (think of it as a reliable road) and TLS (a secure road).
+  * When you forward a message using set_forward_no_connect, Kamailio checks if there’s an active connection to the destination
 
 ## Table Sql Script
 [sql script](https://github.com/kamailio/kamailio/blob/master/utils/kamctl/mysql)
