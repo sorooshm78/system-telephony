@@ -2105,3 +2105,6 @@ Description:	Remote IP address, as passed on the command line.
 
 * -users : Instead of starting calls at a fixed rate, begin 'users' calls at startup,
         and keep the number of calls constant.
+
+* -p  : Set the local port number.  Default is a random free port chosen by the
+        system.
