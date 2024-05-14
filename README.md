@@ -42,6 +42,7 @@
             * [Functions](#functions-1)
             * [RPC Command](#rpc-command)
             * [Destination Selection Algorithm](#destination-selection-algorithm)
+            * [weight and rweight](#weight-and-rweight)
             * [Managing Failure](#managing-failure)
         * [Ctl Module](#ctl-module)
             * [Params](#params-1)
