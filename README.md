@@ -729,6 +729,15 @@ set_forward_no_connect in a straightforward way:
   * This concept applies mainly to protocols like TCP (think of it as a reliable road) and TLS (a secure road).
   * When you forward a message using set_forward_no_connect, Kamailio checks if there’s an active connection to the destination
 
+
+### set_reply_no_connect
+Like set_forward_no_connect(), but for replies to the current message (local generated replies and replies forwarded by tm). The behavior depends in which route block the function is called:
+
+* normal request route: affects all replies sent back on the transaction (either local or forwarded) and all local stateless replies (sl_reply()).
+
+* For replies coming from local users , usually behind NAT , do not open a new TCP connection on each reply
+
+
 ## Table Sql Script
 [sql script](https://github.com/kamailio/kamailio/blob/master/utils/kamctl/mysql)
 
