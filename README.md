@@ -1693,6 +1693,106 @@ dispatch to all destination in setid at once (12) allows you to perform parallel
 
 That landline will receive three calls, which will ring at the same time until the called party answers one of the calls. When they do the other two calls will stop ringing. This can get really messy.
 
+### weight and rweight 
+weight: use weight based load distribution. You have to set the attribute 'weight' for each address (gateway) in destination set. See also the description of the 'weight' attribute in the 'Special Attributes' section
+
+rweight: use relative weight based load distribution. You have to set the attribute 'rweight' per each address in destination set. Active host usage probability is rweight/(SUM of all active host rweights in destination group).
+
+The major difference from the weight distribution is the probability recalculation according to rweight value in case of destinations being active or inactive.
+
+For example, 100 calls in 3-destinations group with rweight params 1/2/1 will be distributed as 25/50/25. If the third destination becomes inactive, the distribution is changed to 33/67/0. If the computation of percentage per destination is not an exact integer number, the value is trucated and the last destination is used to fill the remaining percentage till 100
+
+### weight
+|   id  |  setid  |  destination         | flags | priority |     attrs      | description |
+| :---: | :-----: |    :------------:    | :---: | :------: |     :---:      | :--------:  | 
+|   1   |     1   |  192.168.21.80:5060  |       |          |   weight=25    | node1       |
+|   2   |     1   |  192.168.21.81:5060  |       |          |   weight=50    | node2       |
+|   3   |     1   |  192.168.21.82:5060  |       |          |   weight=25    | node3       |
+
+#### Example 1
+100 Calls
+|   node1  |  node2  |  node3  |
+| :---:    | :-----: |  :----: | 
+|   25     |   50    |    25   | 
+
+
+100 Calls when node1 is inactive
+|   node1  |  node2  |  node3  |
+| :---:    | :-----: |  :----: | 
+|   0      |    75   |    25   | 
+
+
+#### Example 2
+100 Calls
+|   node1  |  node2  |  node3  |
+| :---:    | :-----: |  :----: | 
+|   25     |   50    |    25   | 
+
+
+100 Calls when node2 is inactive
+|   node1  |  node2  |  node3  |
+| :---:    | :-----: |  :----: | 
+|    25    |    0    |    75   | 
+
+#### Example 3
+100 Calls
+|   node1  |  node2  |  node3  |
+| :---:    | :-----: |  :----: | 
+|   25     |   50    |    25   | 
+
+
+100 Calls when node3 is inactive
+|   node1  |  node2  |  node3  |
+| :---:    | :-----: |  :----: | 
+|    50    |    50   |    0    | 
+
+
+### rweight
+|   id  |  setid  |  destination         | flags | priority |     attrs      | description |
+| :---: | :-----: |    :------------:    | :---: | :------: |     :---:      | :--------:  | 
+|   1   |     1   |  192.168.21.80:5060  |       |          |   rweight=25    | node1       |
+|   2   |     1   |  192.168.21.81:5060  |       |          |   rweight=50    | node2       |
+|   3   |     1   |  192.168.21.82:5060  |       |          |   rweight=25    | node3       |
+
+#### Example 1
+100 Calls
+|   node1  |  node2  |  node3  |
+| :---:    | :-----: |  :----: | 
+|   25     |   50    |    25   | 
+
+
+100 Calls when node1 is inactive
+|   node1  |  node2  |  node3  |
+| :---:    | :-----: |  :----: | 
+|   0      |    66   |    34   | 
+
+
+#### Example 2
+100 Calls
+|   node1  |  node2  |  node3  |
+| :---:    | :-----: |  :----: | 
+|   25     |   50    |    25   | 
+
+
+100 Calls when node2 is inactive
+|   node1  |  node2  |  node3  |
+| :---:    | :-----: |  :----: | 
+|    50    |    0    |    50   | 
+
+#### Example 3
+100 Calls
+|   node1  |  node2  |  node3  |
+| :---:    | :-----: |  :----: | 
+|   25     |   50    |    25   | 
+
+
+100 Calls when node3 is inactive
+|   node1  |  node2  |  node3  |
+| :---:    | :-----: |  :----: | 
+|    34    |    66   |    0    | 
+
+
+
 ### Managing Failure
 Let’s say we try and send a call to one of our Media Gateways and it fails, we could forward that failure response to the UA, or, better yet, we could try on another Media Gateway.
 
