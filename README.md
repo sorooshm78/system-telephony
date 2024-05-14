@@ -500,6 +500,7 @@ request_route {
 
         # handle requests within SIP dialogs
         route(WITHINDLG);
+}
 ```
 
 So now our config looks like this:
@@ -655,6 +656,62 @@ With the boilerplate routes we talked about in the last tutorial all you have to
 * max_forward checking (for handling routing loops)
 * OPTIONS response handling
 * Sanity checking
+
+```
+route[REQINIT] {
+	# no connect for sending replies
+	set_reply_no_connect();
+	# enforce symmetric signaling
+	# - send back replies to the source address of request
+	force_rport();
+
+        #!ifdef WITH_ANTIFLOOD
+	# flood detection from same IP and traffic ban for a while
+	# be sure you exclude checking trusted peers, such as pstn gateways
+	# - local host excluded (e.g., loop to self)
+	if(src_ip!=myself) {
+		if($sht(ipban=>$si)!=$null) {
+			# ip is already blocked
+			xdbg("request from blocked IP - $rm from $fu (IP:$si:$sp)\n");
+			exit;
+		}
+		if (!pike_check_req()) {
+			xalert("ALERT: pike blocking $rm from $fu (IP:$si:$sp)\n");
+			$sht(ipban=>$si) = 1;
+			exit;
+		}
+	}
+        #!endif
+	if($ua =~ "friendly|scanner|sipcli|sipvicious|VaxSIPUserAgent|pplsip") {
+		# silent drop for scanners - uncomment next line if want to reply
+		# sl_send_reply("200", "OK");
+		exit;
+	}
+
+	if (!mf_process_maxfwd_header("10")) {
+		sl_send_reply("483", "Too Many Hops");
+		exit;
+	}
+
+	if(is_method("OPTIONS") && uri==myself && $rU==$null) {
+		sl_send_reply("200", "Keepalive");
+		exit;
+	}
+
+	if(!sanity_check("17895", "7")) {
+		xlog("Malformed SIP request from $si:$sp\n");
+		exit;
+	}
+}
+
+```
+
+
+
+
+
+
+
 
 ## Table Sql Script
 [sql script](https://github.com/kamailio/kamailio/blob/master/utils/kamctl/mysql)
