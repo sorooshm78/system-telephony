@@ -34,19 +34,19 @@
             * [Overview](#overview)
             * [Dependencies](#dependencies)
             * [Database setup](#database-setup)
-            * [Params](#parameters)
-            * [Functions](#functions)
+            * [Params](#params-secfilter)
+            * [Functions](#funcs-secfilter)
         * [Dispatcher Module](#dispatcher-module)
             * [Links](#links)
-            * [Params](#params)
-            * [Functions](#functions-1)
-            * [RPC Command](#rpc-command)
+            * [Params](#params-dispatcher)
+            * [Functions](#funcs-dispatcher)
+            * [RPC Command](#rpc-command-dispatcher)
             * [Destination Selection Algorithm](#destination-selection-algorithm)
             * [weight and rweight](#weight-and-rweight)
             * [Detection state node](#detection-state-node)
             * [Managing Failure](#managing-failure)
         * [Ctl Module](#ctl-module)
-            * [Params](#params-1)
+            * [Params](#params-ctl)
 * [sipp](#sipp)            
         
 
@@ -866,7 +866,7 @@ Type values are:
 * 3 (IP address)
 * 4 (user)
 
-### Parameters
+### Params secfilter
 #### db_url (string)
 Database URL.
 Default value is ""
@@ -875,7 +875,7 @@ Default value is ""
 modparam("secfilter", "db_url", "mysql://user:pass@localhost/kamailio")
 ```
 
-### Functions
+### Funcs secfilter
 #### secf_check_ip ()
 It checks if the source IP address is blacklisted. The search is approximate and data stored in the database will be compared as a prefix. For example, if we have blacklisted IP address 192.168.1. all messages from IPs like 192.168.1.% will be rejected.
 
@@ -1115,7 +1115,7 @@ There are some predefined names:
 * 'obproxy' - SIP URI of outbound proxy to be used when sending pings. It overwrites the general ds_outbound_proxy parameter.
 * 'latency' - latency_stats initialization in ms.
 
-### Params
+### Params dispatcher
 #### ds_ping_interval (int)
 With this parameter you can define the interval for sending a request to a gateway marked as inactive upon a failed request routing to it. This parameter is only used, when the TM-Module is loaded. If set to “0”, the pinging of inactive gateway is disabled.
 
@@ -1454,7 +1454,7 @@ $xavp(sf[0]=>fr_inv_timer)=15;
 $xavp(sf[0]=>headers)="X-CustomerID: pw45\r\n";
 ```
 
-### Functions
+### Funcs dispatcher
 #### ds_select(set, alg [, limit])
 The method selects a destination from addresses set and adds it in the XAVP specified for this module. It is not updating R-URI nor the destination URI. The parameters have same meaning as for ds_select_dst().
 
@@ -1480,7 +1480,7 @@ Takes the next destination address from the corresponding XAVPs and sets the dst
 This function can be used from REQUEST_ROUTE, FAILURE_ROUTE
 
 
-### RPC Command
+### RPC command dispatcher
 #### dispatcher.set_state
 Sets the state for a destination address (can be use to mark the destination as active or inactive).
 
@@ -2135,7 +2135,7 @@ $ kamcmd ps
 11277	tcp main process
 ```
 
-## params
+## params ctl
 ### binrpc (string)
 Specifies the transport used for the binrpc protocol. The following transport protocol are supported: Unix datagram sockets, Unix stream sockets, UDP and TCP.
 
