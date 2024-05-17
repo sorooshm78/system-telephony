@@ -43,6 +43,7 @@
             * [RPC Command](#rpc-command)
             * [Destination Selection Algorithm](#destination-selection-algorithm)
             * [weight and rweight](#weight-and-rweight)
+            * [Detection state node](#detection-state-node)
             * [Managing Failure](#managing-failure)
         * [Ctl Module](#ctl-module)
             * [Params](#params-1)
@@ -1874,6 +1875,93 @@ For example, 100 calls in 3-destinations group with rweight params 1/2/1 will be
 | :---:    | :-----: |  :----: | 
 |    34    |    66   |    0    | 
 
+
+### Detection state node
+state node
+```
+A(active) ---> T(trying)[active] ---> I(inactive) ---> A(active)
+```
+```
+AX -> AP -> TP -> IP -> AP
+```
+
+params
+```
+modparam("tm", "fr_timer", 30000)                      # default retransmission timeout: 30sec
+
+modparam("dispatcher", "ds_ping_interval", 10)         # How often to ping destinations to check status: 10sec
+modparam("dispatcher", "ds_ping_method", "OPTIONS")    # Send SIP Options ping
+modparam("dispatcher", "ds_probing_threshold", 5)      # How many failed pings in a row do we need before we consider it down (active -> inactive)
+modparam("dispatcher", "ds_inactive_threshold", 2)     # How many sucessful pings in a row do we need before consider it up (inactive -> active)
+```
+
+```
+AX --(10sec)--> AP --(30sec)--> TP --(50sec)--> IP --(20sec)--> AP
+```
+
+
+------------
+
+for state AX to AP: 
+```
+AX -> AP = 1 * ping_interval
+```
+
+example:
+```
+AX -> AP = 1 * 10sec = 10sec
+```
+
+------------
+
+for state AP to TP: 
+```
+AP -> TP = fr_timer
+```
+
+example:
+```
+AP -> TP = 30sec
+```
+
+------------
+
+for state TP to IP: 
+```
+TP -> IP = probing_threshold * ping_interval
+```
+
+example:
+```
+TP -> IP = 5 * 10sec = 50sec 
+```
+
+------------
+
+
+for state AP to IP:
+```
+AP -> IP = fr_timer + (probing_threshold * ping_interval)
+```
+
+example:
+```
+AP -> IP = 30sec + (5 * 10sec) = 80sec 
+```
+
+------------
+
+for state IP to AP:
+```
+IP -> AP = inactive_threshold * ping_interval
+```
+
+example:
+```
+IP -> AP = 2 * 10sec = 20sec 
+```
+
+------------
 
 
 ### Managing Failure
