@@ -22,7 +22,9 @@
     * [Global Parameters Section](#global-parameters-section)
     * [Modules Settings Section](#modules-settings-section)
     * [Routing Blocks Section](#routing-blocks-section)
-    * [Structure](#)
+    * [Structure](#structure)
+    * [REQINIT](#reqinit)
+    * [onreply_route](#onreply_route)
     * [xlog](#xlog)
     * [sl_reply](#sl_reply)
     * [lookup](#lookup)
@@ -658,6 +660,7 @@ With the boilerplate routes we talked about in the last tutorial all you have to
 * OPTIONS response handling
 * Sanity checking
 
+### REQINIT
 ```
 route[REQINIT] {
 	# no connect for sending replies
@@ -738,6 +741,39 @@ Like set_forward_no_connect(), but for replies to the current message (local gen
 
 * For replies coming from local users , usually behind NAT , do not open a new TCP connection on each reply
 
+* onreply_route: affects the current reply (so the send_flags set in the onreply_route will be used if the reply for which they were set is the winning final reply or it's a provisional reply that is forwarded)
+
+
+### onreply_route
+The `onreply_route` in Kamailio (formerly known as OpenSER) is a powerful feature that allows you to handle SIP replies within the context of an active transaction. Let me break it down for you:
+
+1. **What Is `onreply_route`?**
+   - The `onreply_route` is a SIP reply routing block executed by the Transaction Module (TM) in Kamailio.
+   - It contains a set of actions to be taken for SIP replies.
+   - The main `onreply_route` is executed for **all** replies received.
+   - Certain `onreply_route` blocks can be executed by the TM module for special replies.
+
+2. **How Does It Work?**
+   - When a SIP request generates a reply, Kamailio checks if there's an `onreply_route` associated with that request.
+   - If armed for the specific SIP request, the `onreply_route` processes the reply.
+   - You can use `t_on_reply("onreply_route_index")` to arm the `onreply_route` for specific requests.
+
+3. **Example Usage:**
+   - Suppose you want to handle replies from a specific IP address (e.g., 192.168.1.110) back to the originator.
+   - You can add an `onreply_route` block to handle these replies.
+   - Here's a simplified example:
+     ```kamailio
+     onreply_route {
+         # Your custom logic here to handle the reply
+         # For instance, logging or modifying the reply
+     }
+     ```
+
+4. **Additional Notes:**
+   - The `onreply_route` is a powerful tool for customizing how Kamailio processes SIP replies.
+   - You can use it to implement features like logging, modifying headers, or triggering specific actions based on reply content.
+
+For more detailed information, you can refer to the official Kamailio documentation on the [Core Cookbook](https://www.kamailio.org/dokuwiki/doku.php/core-cookbook:3.0.x) or explore other resources like [Kamailio Bytes](https://nickvsnetworking.com/kamailio-bytes-onreply-route/).
 
 ## Table Sql Script
 [sql script](https://github.com/kamailio/kamailio/blob/master/utils/kamctl/mysql)
@@ -1877,6 +1913,18 @@ For example, 100 calls in 3-destinations group with rweight params 1/2/1 will be
 
 
 ### Detection state node
+#### fr_timer (integer)
+Timer which hits if no final reply for a request or ACK for a negative INVITE reply arrives (in milliseconds).
+
+Default value is 30000 ms (30 seconds).
+
+Example 1.1. Set fr_timer parameter
+```
+...
+modparam("tm", "fr_timer", 10000)
+...
+```
+
 state node
 ```
 A(active) ---> T(trying)[active] ---> I(inactive) ---> A(active)
