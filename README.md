@@ -775,6 +775,34 @@ The `onreply_route` in Kamailio (formerly known as OpenSER) is a powerful featur
 
 For more detailed information, you can refer to the official Kamailio documentation on the [Core Cookbook](https://www.kamailio.org/dokuwiki/doku.php/core-cookbook:3.0.x) or explore other resources like [Kamailio Bytes](https://nickvsnetworking.com/kamailio-bytes-onreply-route/).
 
+
+### force_rport
+Force_rport() adds the rport parameter to the first Via header of the received message. Thus, Kamailio will add the received port to the top most Via header in the SIP message, even if the client does not indicate support for rport. This enables subsequent SIP messages to return to the proper port later on in a SIP transaction.
+
+This is useful for NAT traversal, to enforce symmetric response signaling.
+
+The rport parameter is defined in RFC 3581.
+
+Note: there is also a force_rport parameter which changes the gobal behavior of the SIP proxy.
+
+Example of usage:
+```
+force_rport();
+```
+
+### add_rport
+Alias for force_rport();
+
+
+
+
+
+
+
+
+
+
+
 ## Table Sql Script
 [sql script](https://github.com/kamailio/kamailio/blob/master/utils/kamctl/mysql)
 
