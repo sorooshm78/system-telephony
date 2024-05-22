@@ -904,6 +904,11 @@ Content-Type: application/sdp
 
 By including the Record-Route headers in the 200 OK response, the customer ensures that the ACK message sent by Telnyx correctly follows the predefined path through any intermediate
 
+* Forward Path (INVITE): For the initial INVITE request, Record-Route headers are added in the order the request passes through each proxy. The first proxy the request encounters adds its Record-Route header first, and so on. This order determines the path that the initial request takes through the network.
+
+* Backward Path (Responses): For responses, such as the 200 OK, SIP messages traverse the proxies in reverse order, following the "Via" headers back to the originator. However, for subsequent requests within the dialog (like ACK and BYE), the order of the Record-Route headers dictates the path. 
+
+The UAC constructs the "Route" header field for these messages based on the Record-Route headers it received in the first final response (e.g., 200 OK). It reverses the order of the Record-Route headers to ensure that subsequent messages follow the path back through the proxies in the correct sequence.
 
 ## Table Sql Script
 [sql script](https://github.com/kamailio/kamailio/blob/master/utils/kamctl/mysql)
