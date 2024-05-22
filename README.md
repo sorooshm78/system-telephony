@@ -25,6 +25,7 @@
     * [Structure](#structure)
     * [REQINIT](#reqinit)
     * [onreply_route](#onreply_route)
+    * [SIP route headers](#sip-route-headers)
     * [xlog](#xlog)
     * [sl_reply](#sl_reply)
     * [lookup](#lookup)
@@ -794,13 +795,114 @@ force_rport();
 Alias for force_rport();
 
 
+#### Record-Route
+The Record-Route header is inserted into requests by proxies that wanted to be in the path of subsequent requests for the same call-id. It is then used by the user agent to route subsequent requests.
+
+#### Via
+Via headers are inserted by servers into requests to detect loops and to help responses to find their way back to the client. This is helpful for only responses to reach their destination.
+
+## SIP Route Headers
+The Record-Route and Via headers are fundamental components of the Session Initiation Protocol (SIP), which is a signalling protocol used for initiating, managing, and terminating real-time sessions that involve video, voice, messaging, and other communications applications across IP networks. Both headers play critical roles in SIP's operation, ensuring proper routing of requests and responses between SIP entities. Their development and use are closely tied to the history and evolution of SIP itself.
 
 
+### Via Header
+The Via header is used to track the path of request messages as they traverse through the network of SIP servers to reach the intended recipient. It also provides a route for the responses to follow back to the originator. Each SIP proxy or server that forwards a request adds its address to the top of the Via header list. When the response is generated, it travels back through the list of Via headers, ensuring it follows the same path back to the originator.
 
+ 
+The Via header has been part of SIP since its inception. SIP was developed by the Internet Engineering Task Force (IETF) and first standardised in RFC 2543 in 1999. The Via header was designed to solve the problem of response routing in IP networks, where requests could traverse multiple nodes, and responses needed a way to navigate back through the same nodes.
 
+### Record-Route Header
+The Record-Route header is used by SIP proxies to ensure that the signalling for subsequent SIP messages (such as mid-dialog requests) follows the same path as the initial request. When a SIP proxy wants to stay in the path of future requests in a dialog, it adds a Record-Route header to the initial INVITE request. This ensures that all subsequent messages within the same dialog traverse through the recorded route, enabling features like billing, call recording, or session management to be applied consistently.
 
+Like the Via header, the Record-Route header has been a part of SIP since its early days. It was introduced to address the need for maintaining the signalling path for the duration of a SIP session, especially in complex scenarios involving multiple proxies and network elements. The concept of recording the route was crucial for deploying SIP in real-world networks, where the control over media and signalling paths needed to be maintained for the functionality and security of communication sessions.
 
+Both headers reflect SIP's flexibility and its ability to navigate the complexities of IP network architectures. Over the years, SIP has evolved through various RFCs (Request for Comments), with significant updates including RFC 3261 in 2002, which solidified many of the protocol's core operations, including the behaviours of the Via and Record-Route headers. These headers ensure that SIP can operate effectively over the diverse and distributed nature of the Internet, supporting the reliable delivery and routing of communication sessions across multiple hops and domains.
 
+### Introduction
+When managing SIP (Session Initiation Protocol) communications, ensuring seamless call setup and media flow is crucial for both service providers and their customers. A common issue encountered during SIP transactions is the failure of ACK messages to reach the end device, confirming the final response to the initial SIP INVITE. This can prevent the establishment of media sessions, leading to call setup failures and, ultimately, calls being dropped with a SIP BYE message and the reason as "media_timeout." In this article, we'll delve into the intricacies of the Route headers in inbound calls and explain why omitting these headers in a 200 OK response can cause such problems.
+
+### The Role of Route Headers in SIP Communications
+SIP utilises various headers to facilitate communication sessions between endpoints. Among these, Route headers play a pivotal role in defining the path that SIP messages should follow through the network. When an INVITE request is made to initiate a call, it traverses through proxies and other network elements before reaching the intended recipient. The Route headers ensure that subsequent messages, including the critical ACK response, follow the same path back to the originator, navigating through the network's topology correctly.
+
+ 
+### The Consequence of Omitting Route Headers in 200 OK Responses
+When a callee sends a 200 OK response to accept an INVITE request, this response should include Route headers that mirror the path taken by the initial INVITE. This inclusion ensures that the ACK message, which confirms receipt of the 200 OK, is routed back through the same network elements, reaching the callee and signalling that the session can proceed with media exchange.
+
+If the 200 OK omits these Route headers, the network may not have the necessary information to route the ACK back to the callee correctly. As a result, even though the call appears to be established from the perspective of the initiating party (such as Telnyx), the lack of ACK receipt at the callee's end means the session cannot transition to media exchange. Consequently, without media flow, the call is eventually terminated with a "media_timeout" hang-up cause after a predefined period, typically 5 minutes.
+
+ 
+### SIP Record Route Example
+To provide a clear understanding, let's illustrate two examples based on the provided SIP INVITE and 200 OK messages. These examples aim to showcase the issue arising from the omission of Record-Route headers in the 200 OK response and how their inclusion ensures successful SIP call establishment.
+
+ 
+### Example 1: Problematic Scenario Without Record-Route Headers
+
+#### Telnyx SIP INVITE to Customer
+```
+INVITE sip:+12345678901@sip.example.com:5060 SIP/2.0 
+Record-Route: <sip:192.76.120.10;r2=on;lr;ftag=BUXDty7v06tXH> 
+Record-Route: <sip:10.255.0.1;r2=on;lr;ftag=BUXDty7v06tXH> 
+Via: SIP/2.0/UDP 192.76.120.10;branch=z9hG4bK2d69.8e8f5f5fb057db25a37e7b57b6da8e73.0 
+Via: SIP/2.0/UDP 10.13.177.4:6000;received=10.13.177.4;rport=6000;branch=z9hG4bKr588213p7Z0Sp
+Max-Forwards: 60 
+From: "+19876543210" <sip:+19876543210@sip.telnyx.com>;tag=BUXDty7v06tXH To: <sip:+12345678901@sip.example.com:5060> 
+Call-ID: 684d7abc-1234-4567-891a-444dd7a7b77d 
+CSeq: 12123802 INVITE 
+Content-Type: application/sdp 
+...
+```
+
+#### Customer's 200 OK Response (Without Record-Route Headers)
+```
+SIP/2.0 200 OK 
+Via: SIP/2.0/UDP 192.76.120.10;branch=z9hG4bK2d69.8e8f5f5fb057db25a37e7b57b6da8e73.0 
+Via: SIP/2.0/UDP 10.13.177.4:6000;received=10.13.177.4;rport=6000;branch=z9hG4bKr588213p7Z0Sp 
+To: sip:+12345678901@sip.example.com:5060;tag=8b240ac5236e0c71 
+From: sip:+19876543210@sip.telnyx.com;tag=BUXDty7v06tXH 
+Call-ID: 684d7abc-1234-4567-891a-444dd7a7b77d 
+CSeq: 12123802 INVITE 
+Contact: <sip:+12345678901@another.example.com:5060> 
+Content-Type: application/sdp 
+...
+```
+
+Without the Record-Route headers in the 200 OK response, the ACK message sent by Telnyx might not follow the intended path, potentially failing to reach the customer's system. This misrouting can prevent the call from being fully established, leading to issues such as calls not connecting or being dropped unexpectedly.
+
+ 
+### Example 2: Successful Scenario With Record-Route Headers
+
+#### Telnyx SIP INVITE to Customer (Same as Example 1)
+```
+INVITE sip:+12345678901@sip.example.com:5060 SIP/2.0 
+Record-Route: <sip:192.76.120.10;r2=on;lr;ftag=BUXDty7v06tXH> 
+Record-Route: <sip:10.255.0.1;r2=on;lr;ftag=BUXDty7v06tXH> 
+Via: SIP/2.0/UDP 192.76.120.10;branch=z9hG4bK2d69.8e8f5f5fb057db25a37e7b57b6da8e73.0 
+Via: SIP/2.0/UDP 10.13.177.4:6000;received=10.13.177.4;rport=6000;branch=z9hG4bKr588213p7Z0Sp
+Max-Forwards: 60 
+From: "+19876543210" <sip:+19876543210@sip.telnyx.com>;tag=BUXDty7v06tXH To: <sip:+12345678901@sip.example.com:5060> 
+Call-ID: 684d7abc-1234-4567-891a-444dd7a7b77d 
+CSeq: 12123802 INVITE 
+Content-Type: application/sdp 
+...
+```
+
+#### Customer's 200 OK Response (With Record-Route Headers)
+```
+SIP/2.0 200 OK
+Via: SIP/2.0/UDP 192.76.120.10;branch=z9hG4bK2d69.8e8f5f5fb057db25a37e7b57b6da8e73.0
+Via: SIP/2.0/UDP 10.13.177.4:6000;received=10.13.177.4;rport=6000;branch=z9hG4bKr588213p7Z0Sp
+Record-Route: <sip:192.76.120.10;r2=on;lr;ftag=BUXDty7v06tXH>
+Record-Route: <sip:10.255.0.1;r2=on;lr;ftag=BUXDty7v06tXH>
+To: sip:+12345678901@sip.example.com:5060;tag=8b240ac5236e0c71
+From: sip:+19876543210@sip.telnyx.com;tag=BUXDty7v06tXH
+Call-ID: 684d7abc-1234-4567-891a-444dd7a7b77d 
+CSeq: 12123802 INVITE
+Contact: <sip:+12345678901@another.example.com:5060> 
+Content-Type: application/sdp 
+...
+```
+
+By including the Record-Route headers in the 200 OK response, the customer ensures that the ACK message sent by Telnyx correctly follows the predefined path through any intermediate
 
 
 ## Table Sql Script
