@@ -2562,3 +2562,33 @@ Description:	Remote IP address, as passed on the command line.
 
 * -p  : Set the local port number.  Default is a random free port chosen by the
         system.
+
+* -s  : Set the username part of the resquest URI. Default is 'service'.
+
+* -rsa : Set the remote sending address to host:port for sending the messages.
+
+Example : 
+
+server
+```
+# Server:  192.168.10.20:5060
+sipp -sn uas 
+```
+
+client 
+```
+# Kamailio:  192.168.10.30:5060
+sipp -sn usc 192.168.10.30:5060 -rsa 192.168.10.20:5060 
+```
+
+Example : 
+
+client 
+```
+# FreeSwitch:  192.168.10.20:5060
+# Kamailio :  192.168.10.30:5060
+# Dialplan : 1010
+
+sipp -sn usc 192.168.10.30:5060 -rsa 192.168.10.20:5060 -s 1010 
+```
+
