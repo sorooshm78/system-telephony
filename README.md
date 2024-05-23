@@ -2577,8 +2577,7 @@ sipp -sn uas
 
 client 
 ```
-# Kamailio:  192.168.10.30:5060
-sipp -sn usc 192.168.10.30:5060 -rsa 192.168.10.20:5060 
+sipp -sn usc -rsa 192.168.10.20:5060 
 ```
 
 Example : 
@@ -2586,9 +2585,8 @@ Example :
 client 
 ```
 # FreeSwitch:  192.168.10.20:5060
-# Kamailio :  192.168.10.30:5060
 # Dialplan : 1010
 
-sipp -sn usc 192.168.10.30:5060 -rsa 192.168.10.20:5060 -s 1010 
+sipp -sn usc -rsa 192.168.10.30:5060 -s 1010 
 ```
 
