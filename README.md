@@ -2590,3 +2590,16 @@ client
 sipp -sn usc -rsa 192.168.10.30:5060 -s 1010 
 ```
 
+## Remote control
+SIPp can be “remote-controlled” through a UDP socket. This allows for example
+
+* To automate a series of actions, like increasing the call rate smoothly, wait for 10 seconds, increase more, wait for 1 minute and loop
+* Have a feedback loop so that an application under test can remote control SIPp to lower the load, pause the traffic, …
+Each SIPp instance is listening to a UDP socket. It starts to listen to port 8888 and each following SIPp instance (up to 60) will listen to base_port + 1 (8889, 8890, …).
+
+It is then possible to control SIPp like this:
+
+```
+echo p >/dev/udp/x.y.z.t/8888 -> put SIPp in pause state (p key)
+echo q >/dev/udp/x.y.z.t/8888 -> quit SIPp (q key)
+```
