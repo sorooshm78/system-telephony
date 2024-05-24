@@ -794,6 +794,7 @@ force_rport();
 ### add_rport
 Alias for force_rport();
 
+----------------------
 
 #### Record-Route
 The Record-Route header is inserted into requests by proxies that wanted to be in the path of subsequent requests for the same call-id. It is then used by the user agent to route subsequent requests.
@@ -909,6 +910,51 @@ By including the Record-Route headers in the 200 OK response, the customer ensur
 * Backward Path (Responses): For responses, such as the 200 OK, SIP messages traverse the proxies in reverse order, following the "Via" headers back to the originator. However, for subsequent requests within the dialog (like ACK and BYE), the order of the Record-Route headers dictates the path. 
 
 The UAC constructs the "Route" header field for these messages based on the Record-Route headers it received in the first final response (e.g., 200 OK). It reverses the order of the Record-Route headers to ensure that subsequent messages follow the path back through the proxies in the correct sequence.
+
+### The rport parameter
+When you have a SIP Via: header like
+```
+Via: SIP/2.0/UDP 95.117.121.206:18050;rport;branch=z9hG4bKabc123
+```
+
+the rport parameter means respond to the port from which the request was received
+
+When a server compliant to this specification (which can be a proxy or UAS) receives a
+request, it examines the topmost Via header field value.  If this Via header field value
+contains an "rport" parameter with no value, it MUST set the value of the parameter to
+the source port of the request. This is analogous to the way in which a server will insert
+the "received" parameter into the topmost Via header field value. In fact, the server
+MUST insert a "received" parameter containing the source IP address that the request
+came from, even if it is identical to the value of the "sent-by" component.
+
+
+#### Consider an example.
+A client sends an INVITE which looks like:
+
+```
+INVITE sip:user@domain SIP/2.0 Via: SIP/2.0/UDP 10.1.1.1:4540;rport
+```
+
+This INVITE is sent with a source port of 4540 and source IP of 10.1.1.1. The request is natted, so that the source IP appears as 68.44.20.1 and the source port as 9988. This is received at a proxy.The proxy forwards the request, but not before appending a value to the rport parameter in the proxied request:
+
+```
+INVITE sip:user@domain2 SIP/2.0 Via: SIP/2.0/UDP proxy.domain.com Via: SIP/2.0/UDP 10.1.1.1:4540;received=68.44.20.1;rport=9988
+```
+
+This request generates a response, which arrives at the proxy:
+
+```
+SIP/2.0 200 OK Via: SIP/2.0/UDP proxy.domain.com Via: SIP/2.0/UDP 10.1.1.1:4540;received=68.44.20.1;rport=9988
+```
+
+The proxy strips its top Via, and then examines the next one. It con- tains both a received param, and an rport. The result is that the follow response is sent to IP address 68.44.20.1, port 9988:
+
+```
+SIP/2.0 200 OK Via: SIP/2.0/UDP 10.1.1.1:4540;received=68.44.20.1;rport=9988
+```
+
+The NAT rewrites the destination address of this packet back to IP 10.1.1.1, port 4540, and is received by the client.
+
 
 ## Table Sql Script
 [sql script](https://github.com/kamailio/kamailio/blob/master/utils/kamctl/mysql)
