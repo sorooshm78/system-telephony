@@ -955,6 +955,63 @@ SIP/2.0 200 OK Via: SIP/2.0/UDP 10.1.1.1:4540;received=68.44.20.1;rport=9988
 
 The NAT rewrites the destination address of this packet back to IP 10.1.1.1, port 4540, and is received by the client.
 
+### AntiFlood
+```
+#!ifdef WITH_ANTIFLOOD
+	# flood detection from same IP and traffic ban for a while
+	# be sure you exclude checking trusted peers, such as pstn gateways
+	# - local host excluded (e.g., loop to self)
+	if(src_ip!=myself) {
+		if($sht(ipban=>$si)!=$null) {
+			# ip is already blocked
+			xdbg("request from blocked IP - $rm from $fu (IP:$si:$sp)\n");
+			exit;
+		}
+		if (!pike_check_req()) {
+			xalert("ALERT: pike blocking $rm from $fu (IP:$si:$sp)\n");
+			$sht(ipban=>$si) = 1;
+			exit;
+		}
+	}
+#!endif
+```
+
+#### src_ip
+Reference to source IP address of the SIP message.
+
+Example of usage:
+```
+if(src_ip==127.0.0.1)
+{
+        log("the message was sent from localhost!\n");
+};
+```
+
+#### myself
+This is a reference to the list of local IP addresses, hostnames and aliases that has been set in the Kamailio configuration file. This lists contain the domains served by Kamailio.
+
+The variable can be used to test if the host part of an URI is in the list. The usefulness of this test is to select the messages that has to be processed locally or has to be forwarded to another server.
+
+See “alias” to add hostnames,IP addresses and aliases to the list.
+
+Example of usage:
+```
+if(uri==myself) {
+        log("the request is for local processing\n");
+};
+```
+
+#### alias
+Parameter to set alias hostnames for the server. It can be set many times, each value being added in a list to match the hostname when 'myself' is checked.
+
+It is necessary to include the port (the port value used in the “port=” or “listen=” defintions) in the alias definition otherwise the loose_route() function will not work as expected for local forwards. Even if you do not use 'myself' explicitly (for example if you use the domain module), it is often necessary to set the alias as these aliases are used by the loose_routing function and might be needed to handle requests with pre-loaded route set correctly.
+
+Example of usage:
+```
+    alias=other.domain.com:5060
+    alias=another.domain.com:5060
+```
+
 
 ## Table Sql Script
 [sql script](https://github.com/kamailio/kamailio/blob/master/utils/kamctl/mysql)
