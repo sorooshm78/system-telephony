@@ -1012,6 +1012,8 @@ Example of usage:
     alias=another.domain.com:5060
 ```
 
+#### $si - Source IP address
+$si - reference to IP source address of the message
 
 ## Table Sql Script
 [sql script](https://github.com/kamailio/kamailio/blob/master/utils/kamctl/mysql)
