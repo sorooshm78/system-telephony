@@ -1093,6 +1093,54 @@ modparam("pike", "remove_latency", 130)
 ...
 ```
 
+### Scanner
+```
+if($ua =~ "friendly|scanner|sipcli|sipvicious|VaxSIPUserAgent|pplsip") {
+        # silent drop for scanners - uncomment next line if want to reply
+        # sl_send_reply("200", "OK");
+        exit;
+}
+```
+
+### $ua - User agent header
+$ua - reference to user agent header field
+
+### Operators
+The logical operators that can be used in 'expr':
+```
+  ==      equal
+  !=      not equal
+  =~      regular expression matching: Note: Posix regular expressions will be used, e.g. use [[:digit:]]{3} instead of \d\d\d
+  !~      regular expression not-matching (NOT PORTED from Kamailio 1.x, use '!(x =~ y)')
+  >       greater
+  >=      greater or equal
+  <       less
+  <=      less or equal
+  &&      logical AND
+  ||      logical OR
+  !       logical NOT
+  [ ... ] test operator - inside can be any arithmetic expression
+```
+
+### sl_send_reply(code, reason)
+For the current request, a reply is sent back having the given code and text reason. The reply is sent stateless, totally independent of the Transaction module and with no retransmission for the INVITE's replies. 'code' and 'reason' can contain pseudo-variables that are replaced at runtime.
+
+Meaning of the parameters is as follows:
+
+* code - Return code.
+* reason - Reason phrase.
+
+This function can be used from REQUEST_ROUTE, ERROR_ROUTE.
+
+Example 1.2. sl_send_reply usage
+```
+...
+sl_send_reply("404", "Not found");
+...
+sl_send_reply("$err.rcode", "$err.rreason");
+...
+```
+
 ## Table Sql Script
 [sql script](https://github.com/kamailio/kamailio/blob/master/utils/kamctl/mysql)
 
