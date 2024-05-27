@@ -1055,6 +1055,44 @@ if (!pike_check_req()) { exit; };
 ...
 ```
 
+### sampling_time_unit (integer)
+Time period in seconds used for sampling (or the sampling accuracy). The smaller the better, but slower. If you want to detect peeks, use a small one. To limit the access (like total number of requests on a long period of time) to a proxy resource (a gateway for example), use a bigger value of this parameter.
+
+IMPORTANT: a too small value may lead to performance penalties due to timer process overloading.
+
+Default value is “2”.
+
+Example 1.1. Set sampling_time_unit parameter
+```
+...
+modparam("pike", "sampling_time_unit", 10)
+...
+```
+
+### reqs_density_per_unit (integer)
+How many requests should be allowed per sampling_time_unit before blocking all the incoming request from that IP. Practically, the blocking limit is between ( let's have x=reqs_density_per_unit) x and 3*x for IPv4 addresses and between x and 8*x for IPv6 addresses.
+
+Default value is 30.
+
+Example 1.2. Set reqs_density_per_unit parameter
+```
+...
+modparam("pike", "reqs_density_per_unit", 30)
+...
+```
+
+### remove_latency (integer)
+Specifies for how long the IP address will be kept in memory after the last request from that IP address. It's a sort of timeout value, in seconds. Note that it is not the duration to keep the IP in state 'blocked'. An IP is unblocked next occurrence of 'sampling_time_unit' that does not exceed 'reqs_density_per_unit'. Keeping an IP in memory results in faster reaching of blocked state -- see the notes about the limits of getting to state 'blocked'.
+
+Default value is 120.
+
+Example 1.3. Set remove_latency parameter
+```
+...
+modparam("pike", "remove_latency", 130)
+...
+```
+
 ## Table Sql Script
 [sql script](https://github.com/kamailio/kamailio/blob/master/utils/kamctl/mysql)
 
