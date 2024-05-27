@@ -987,7 +987,7 @@ if(src_ip==127.0.0.1)
 };
 ```
 
-#### myself
+### myself
 This is a reference to the list of local IP addresses, hostnames and aliases that has been set in the Kamailio configuration file. This lists contain the domains served by Kamailio.
 
 The variable can be used to test if the host part of an URI is in the list. The usefulness of this test is to select the messages that has to be processed locally or has to be forwarded to another server.
@@ -1001,7 +1001,7 @@ if(uri==myself) {
 };
 ```
 
-#### alias
+### alias
 Parameter to set alias hostnames for the server. It can be set many times, each value being added in a list to match the hostname when 'myself' is checked.
 
 It is necessary to include the port (the port value used in the “port=” or “listen=” defintions) in the alias definition otherwise the loose_route() function will not work as expected for local forwards. Even if you do not use 'myself' explicitly (for example if you use the domain module), it is often necessary to set the alias as these aliases are used by the loose_routing function and might be needed to handle requests with pre-loaded route set correctly.
@@ -1012,8 +1012,48 @@ Example of usage:
     alias=another.domain.com:5060
 ```
 
-#### $si - Source IP address
+### $si - Source IP address
 $si - reference to IP source address of the message
+
+### $sht(htable=>key)
+Access hash table entries.
+
+It is R/W variable, you can assign values to it directly in configuration file. Hash table entry can be deleted by assigning value $null to it.
+
+The “htname” must be a hash table name defined via “htable” parameter.
+
+The “key” can be:
+
+* static string - set of characters without pseudo-variables
+* dynamic string - set of characters that include pseudo-variables. The pseudo-variables will be evaluated at runtime.
+```
+...
+modparam("htable", "htable", "a=>size=4;")
+...
+$sht(a=>$au) = 1;
+$sht(a=>$ru) = $fu;
+...
+```
+
+### pike_check_req()
+Process the source IP of the current request and return false if the IP was exceeding the blocking limit.
+
+Return codes:
+* 1 (true) - IP is not to be blocked or internal error occurred.
+
+Warning
+IMPORTANT: in case of internal error, the function returns true to avoid reporting the current processed IP as blocked.
+* -1 (false) - IP is source of flooding, previously detected
+* -2 (false) - IP is detected as a new source of flooding - first time detection
+
+This function can be used from REQUEST_ROUTE|ONREPLY_ROUTE.
+
+Example 1.5. pike_check_req usage
+```
+...
+if (!pike_check_req()) { exit; };
+...
+```
 
 ## Table Sql Script
 [sql script](https://github.com/kamailio/kamailio/blob/master/utils/kamctl/mysql)
