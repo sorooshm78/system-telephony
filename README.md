@@ -1217,6 +1217,29 @@ modparam("maxfwd", "max_limit", 32)
 Remember that the Max-Forward header plays a crucial role in ensuring proper routing and preventing infinite loops in SIP networks
 
 
+### Option Request
+```
+if(is_method("OPTIONS") && uri==myself && $rU==$null) {
+        sl_send_reply("200", "Keepalive");
+        exit;
+}
+```
+
+### $ru - Request URI
+$ru - reference to request's URI (address in the first line of a SIP request)
+
+It is R/W variable (you can assign values to it directly in configuration file)
+
+### $rU - Username in R-URI
+$rU - reference to username in request's URI or to the Namespace Identifier of a URN (see RFC 2141)
+
+### Snaity
+if(!sanity_check("17895", "7")) {
+        xlog("Malformed SIP request from $si:$sp\n");
+        exit;
+}
+```
+
 ## Table Sql Script
 [sql script](https://github.com/kamailio/kamailio/blob/master/utils/kamctl/mysql)
 
