@@ -1141,6 +1141,82 @@ sl_send_reply("$err.rcode", "$err.rreason");
 ...
 ```
 
+### Max Forward
+```
+if (!mf_process_maxfwd_header("10")) {
+        sl_send_reply("483", "Too Many Hops");
+        exit;
+}
+```
+
+### mf_process_maxfwd_header(max_value)
+Same as maxfwd_process(max_value).
+
+
+### maxfwd_process(max_value)
+If no Max-Forward header is present in the received request, a header will be added having the original value equal with “max_value”. If a Max-Forward header is already present, its value will be decremented (if not 0). The parameter can be a variable.
+
+Return codes:
+
+* 2 (true) - header was not found and a new header was successfully added.
+* 1 (true) - header was found and its value was successfully decremented (had a non-0 value).
+* -1 (false) - the header was found and its value is 0 (cannot be decremented).
+* -2 (false) - error during processing.
+
+The return code may be extensively tested via script variable “retcode” (or “$?”).
+
+Meaning of the parameters is as follows:
+* max_value - Value to be added if there is no Max-Forwards header field in the message.
+
+This function can be used from REQUEST_ROUTE.
+
+Example maxfwd_process usage
+```
+...
+# initial sanity checks -- messages with
+# max_forwards==0, or excessively long requests
+if (!maxfwd_process("10") && $retcode==-1) {
+	sl_send_reply("483","Too Many Hops");
+	exit;
+};
+...
+```
+
+### max_limit (integer)
+Set an upper limit for the max-forward value in the outgoing requests. If the header is present, the decremented value is not allowed to exceed this max_limits - if it does, the header value will by decreased to “max_limit”.
+
+Note: This check is done when calling the maxfwd_process() function.
+
+The range of values stretches from 1 to 256, which is the maximum MAX-FORWARDS value allowed by RFC 3261. The value can be changed at runtime.
+
+Default value is “70”.
+
+Example Set max_limit parameter
+```
+...
+modparam("maxfwd", "max_limit", 32)
+...
+```
+
+**Max-Forward** header in the context of **Kamailio** and how it affects SIP requests:
+
+1. **Purpose of Max-Forward Header**:
+   - The Max-Forward header is used to prevent loops in a SIP (Session Initiation Protocol) network. 
+   - Each server that processes and forwards a SIP request decrements the Max-Forward value by one.
+   - When the value reaches zero, the request is not forwarded further, and an error response is sent back to the User Agent Client (UAC).
+
+2. **Kamailio's Implementation**:
+   - Kamailio provides a module called **maxfwd** that handles operations related to the Max-Forward header.
+   - If no Max-Forward header is present in the received request, the module adds a header with an original value (specified as "max_value").
+   - If a Max-Forward header is already present, the module decrements its value.
+   - If the decremented value is positive and nonzero, an OK code is returned.
+   - If the decremented value becomes zero, an error code is returned.
+   - The module also allows setting an upper limit for the Max-Forward value in outgoing requests. The default maximum value is 256, as defined by RFC 3261¹³.
+
+
+Remember that the Max-Forward header plays a crucial role in ensuring proper routing and preventing infinite loops in SIP networks
+
+
 ## Table Sql Script
 [sql script](https://github.com/kamailio/kamailio/blob/master/utils/kamctl/mysql)
 
