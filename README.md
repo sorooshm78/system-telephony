@@ -1240,6 +1240,79 @@ if(!sanity_check("17895", "7")) {
 }
 ```
 
+### Snaity Overview
+This module aims to implement several sanity checks on incoming requests which are suggested or even required by a RFC, but are not available yet in the core of Kamailio.
+
+These checks are not required by Kamailio itself for its functionality. But on the other side it does not make much sense if a broken request traverses through a SIP network if it is rejected sooner or later by a SIP device any way. As every sanity check cost extra performance because of additional parsing and evaluation it is with this module now up to the Kamailio administrator what checks should be done on which request.
+
+The following checks are available:
+
+* ruri sip version - (1) - checks if the SIP version in the request URI is supported, currently only 2.0.
+* ruri scheme - (2) - checks if the URI scheme of the request URI is supported (sip[s]|tel[s]) by Kamailio
+* required headers - (4) -checks if the minimum set of required headers To, From, CSeq, Call-ID and Via is present in the request.
+* via sip version - (8) - disabled.
+* via protocol - (16) - disabled.
+* Cseq method - (32) - checks if the method from the CSeq header is equal to the request method.
+* Cseq value - (64) - checks if the number in the CSeq header is a valid unsigned integer.
+* content length - (128) - checks if the size of the body matches with the value from the Content-Length header.
+* expires value - (256) - checks if the value of the Expires header is a valid unsigned integer.
+* proxy require - (512) - checks if all items of the Proxy-Require header are present in the list of the extensions from the module parameter proxy_require.
+* parse uri's - (1024) - checks if the specified URIs are present and parseable by the Kamailio parsers
+* digest credentials (2048) - Check all instances of digest credentials in a message. The test checks whether there are all required digest parameters and that they have meaningful values. NOTE: the message will be considered invalid if the authorization scheme differs from "digest",
+* duplicated To/From tags (4096) - checks for the presence of duplicated tags in To/From headers.
+* Authorization header (8192) - checks if the Authorization header is valid if the scheme is "digest" (see "digest credentials" above), always returns success for other schemes.
+* first via header (16384) - checks if the first Via header is available, can be parsed and has an address value.
+
+### default_checks (integer)
+This parameter determines which of the checks from the sanity module are executed if no parameter was given to the sanity_check function call. By default all implemented checks are included in the execution of the sanity_check function. The integer value is the sum of the check numbers which should be executed by default.
+
+Default value is “3047”. This resolves to the following list of checks: ruri_sip_version (1), ruri_scheme (2), required_headers (4), cseq_method (32), cseq_value (64), content_length (128), expires_value (256), proxy_require (512), digest credentials (2048).
+
+Example 1.1. Set default_checks parameter
+```
+...
+modparam("sanity", "default_checks", 1)
+...
+```
+
+### sanity_check([msg_checks [, uri_checks]])
+This function makes a row of sanity checks over the given SIP request. The behavior of the function is also controlled by autodrop parameter. If autodrop=0, the function returns false (-1) if one of the checks failed. When autodrop=1, the function stops the execution of configuration file. In both cases, if one of the checks fails the module sends a precise error reply via SL send_reply(). Thus there is no need to reply with a generic error message.
+
+The parameters can be static integers or variables holding integer values.
+
+Example 1.6. sanity_check usage
+```
+...
+if (!sanity_check()) {
+	exit;
+}
+...
+```
+
+Optionally the function takes an integer argument which overwrites the global module parameter default_checks. This makes it possible to run certain tests from script regions. The integer value is again the sum of the checks (like for the module parameter) which should be executed at this function call.
+
+Example 1.7. sanity_check usage with parameter
+```
+...
+if (method=="REGISTER" && !sanity_check("256")) {
+	/* the register contains an invalid expires value and is replied with a 400 */
+	exit;
+}
+...
+```
+
+Optionally the function takes a second integer argument which overwrites the global module parameter uri_checks and thus determines which URIs will be checked if the parse uri test will be executed.
+
+Example 1.8. sanity_check usage with two parameters
+```
+...
+if (method=="INVITE" && !sanity_check("1024", "6")) {
+	/* the INVITE contains an invalid From or To header and is replied with a 400 */
+	exit;
+}
+...
+```
+
 ## Table Sql Script
 [sql script](https://github.com/kamailio/kamailio/blob/master/utils/kamctl/mysql)
 
