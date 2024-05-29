@@ -662,6 +662,7 @@ With the boilerplate routes we talked about in the last tutorial all you have to
 * Sanity checking
 
 ### REQINIT
+for more read [link](https://telecom.altanai.com/2018/02/17/kamailio-security/)
 ```
 route[REQINIT] {
 	# no connect for sending replies
