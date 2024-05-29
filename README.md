@@ -1235,6 +1235,7 @@ It is R/W variable (you can assign values to it directly in configuration file)
 $rU - reference to username in request's URI or to the Namespace Identifier of a URN (see RFC 2141)
 
 ### Snaity
+```
 if(!sanity_check("17895", "7")) {
         xlog("Malformed SIP request from $si:$sp\n");
         exit;
