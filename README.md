@@ -1275,6 +1275,28 @@ modparam("sanity", "default_checks", 1)
 ...
 ```
 
+### uri_checks (integer)
+This parameter determines which URIs are going to be checked if the 'parse uri' will be executed.
+
+Default value is 7. This resolves to the following list of parsed URIs: Request URI (1), From URI (2) and To URI (4). Additionally the Contact URI can be also checked (8).
+
+Example 1.2. Set uri_checks parameter
+```
+...
+modparam("sanity", "uri_checks", 3)
+...
+```
+
+### autodrop (integer)
+This parameter controls whether the module drops the SIP message automatically if the sanity checks fail. Default value is 1 (auto drop). If set to 0, sanity_check() function will return -1 (false) to configuration file, allowing to write log messages for example - be sure you “exit” execution of config without sending a SIP reply because it is sent by module itself.
+
+Example 1.4. Set autodrop parameter
+```
+...
+modparam("sanity", "autodrop", 1)
+...
+```
+
 ### sanity_check([msg_checks [, uri_checks]])
 This function makes a row of sanity checks over the given SIP request. The behavior of the function is also controlled by autodrop parameter. If autodrop=0, the function returns false (-1) if one of the checks failed. When autodrop=1, the function stops the execution of configuration file. In both cases, if one of the checks fails the module sends a precise error reply via SL send_reply(). Thus there is no need to reply with a generic error message.
 
