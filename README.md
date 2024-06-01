@@ -3030,3 +3030,103 @@ It is then possible to control SIPp like this:
 echo p >/dev/udp/x.y.z.t/8888 -> put SIPp in pause state (p key)
 echo q >/dev/udp/x.y.z.t/8888 -> quit SIPp (q key)
 ```
+
+## SIPp command line options:
+Following a list of the most common command line options. You can obtain the full list executing the command sipp -h.
+
+Scenario options
+* -sn <scenario>: use a builtin scenario (uas, uac, regexp, ...)
+* -sd <scenario>: dump the XML implementing the builtin scenario
+* -sf <scenario-file>: load a custom scenario file
+* -set <var> <val>: set the variable var with val value, the variable can then used into the scenario file as [$var]
+
+SIP IP address and port
+* -i <local_ip>: set the local IP address for the Contact, Via and From headers, can be referenced with [local_ip] keyword into a scenario file. Applies to the SIP protocol only.
+* -p <local_port>: set the local port for the SIP protocol. Can be referenced using the [local_port]keyword.
+
+Media and RTP options
+* -mi <media_ip>: set the local media IP address, this value can also be referred using the [media_ip] keyword into the scenario file
+* -mp <media_port>: set the local media port, this value can also be referred using the [media_port] keyword into the scenario file
+* -rtp_echo: Enable RTP echo. RTP/UDP packets received on port defined by -mp are echoed to their sender.
+
+Call rate options
+* -l <max_calls>: set the maximum number of simultaneous calls
+* -m <calls>: Stop the test and exit when calls calls are processed
+
+Tracing and logging options
+* -trace_msg: dump sent and received SIP messages in <scenario_file_name>_<pid>_messages.log
+* -message_file: Set the name of the message log file
+* -trace_err: trace all unexpected messages in <scenario_file_name>_<pid>_errors.log
+* -error_file: set the name of the error log file
+* -trace_logs: allow tracing of actions in <scenario_file_name>_<pid>_logs.log
+* -log_file: set the name of the log actions log file
+
+## SIPp scenario file syntax
+root XML tag is named scenario and must have the name attribute:
+```
+<?xml version="1.0" encoding="utf-8" ?>
+<scenario name="Basic UAC custom scenario">
+  <!-- here your scenario -->
+</scenario>
+```
+
+### Scenario commands
+Here is a lost of the most important scenario commands:
+
+* <send>: send a SIP message or a response. Important attributes are:
+   * retrans: set the T1 timer for this message in milliseconds
+   * lost: emulate packet lost, value in percentage
+<recv>: wait for a SIP message or response. Important attributes are:
+
+* response: indicates what SIP message code is expected
+* request: indicates what SIP message request is expected
+* optional: Indicates if the message to receive is optional. If optional is set to "global", SIPp will look every previous steps of the scenario
+* lost: emulate packet lost, value in percentage
+* timeout: specify a timeout while waiting for a message. If the message is not received, the call is aborted
+* ontimeout: specify a label to jump to if the timeout popped regexp_match: boolean. Indicates if 'request' ('response' is not available) is given as a regular expression.
+The recv command can also include the action tag defining the action to execute upon the message reception
+
+* pause: pause the scenario execution. Important attributes are:
+   * milliseconds: time to pause in milliseconds
+   * variable: scenario variable defining the pause time
+
+* nop: the nop action doesn’t do nothing at SIP signalling level, is just a tag containing the action subtag
+
+* sendCmd: content to be sent to the twin 3PCC (3rd Party Call Control) SIPp instance. The Call-ID must be included
+
+* recvCmd: specify an action when receiving the command
+
+* label: a label is used when you want to branch to specific parts in your scenarios
+
+## Common command attributes
+Here is a list of attributes common to all the scenario commands:
+
+* crlf: Displays an empty line after the arrow for the message in main SIPp screen
+* next: You can put a "next" in any command element to go to another part of the script when you are done with sending the message. For optional receives, the next is only taken if that message was received
+* test: You can put a "test" next to a "next" attribute to indicate that you only want to branch to the label specified with "next" if the variable specified in "test" is set
+* display: Display a text into the SIPp screen
+
+## Scenario keywords
+Inside the send command, you have to enclose your SIP message between the <![CDATA and the ]]> tags.
+
+Everything between those tags is going to be sent toward the remote system. Into the SIP message you can include some keywords (Eg. [service], [remote_ip], etc..).
+
+Those keywords will get replaced at runtime by SIPp.
+
+* [service]: service field, as passed in the -s <service_name> command line option (default: service)
+* [remote_ip] and [remote_port]: remote IP address and port
+* [transport]: the transport mode (depending on the -t CLI parameter) (default: UDP)
+* [local_ip], [local_ip_type], [local_port]: depending on the -l and -p CLI params. Type can be 4 or 6
+* [len]: computed length of the SIP body. To be used in Content-Length header
+* [cseq]: generates automatically the CSeq number
+* [call_id]: a call_id identifies a call and is generated by SIPp for each new call. In client mode, it is mandatory to use the value generated by SIPp in the Call-ID header
+* [media_ip], [media_ip_type], [media_port]: depending on the value of -mi and -mp params.
+* [last_*]: is replaced automatically by the specified header if it was present in the last message received (Eg. [last_From])
+
+## Scenario actions
+In a recv, recvCmd or nop command you can execute one or more actions:
+
+* ereg: execute a regular expression matching
+* log: write a log message
+* exec: execute a command on the operating system shell, or an internal SIPp command or play a pcap file
+* jump: jump to an arbitrary scenario index
