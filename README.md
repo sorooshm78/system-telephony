@@ -140,6 +140,14 @@ Content-Type: (type of content)
 ```
 
 ## Transactions:
+A transaction consists of a Request, any non-final (1xx) Responses received, and a final Response (2xx, 3xx, 4xx, 5xx, or 6xx), as well as the acknowledgements of the Responses (ACK or PRACK), except for ACKs to 2xx Responses. For example:
+
+SIP peer A sends an INVITE Request to SIP peer B
+
+SIP peer B returns a Response of 100 TRYING; this is a non-final Response, so the transaction is not completed yet
+
+SIP peer B returns 200 OK (a final response), accepting the invitation; this completes the transaction
+
    - A **transaction** in SIP represents a sequence of messages exchanged between a **client** (usually the initiator) and a **server** (which responds to the client's requests).
    - A transaction consists of the following components:
      - **Request**: The initial message sent by the client (e.g., an INVITE request to establish a call).
@@ -152,6 +160,17 @@ Content-Type: (type of content)
      - SIP peer B then sends a 200 OK (final response), accepting the invitation, completing the transaction.
 
 ## Dialogs:
+A dialog is just a series of transactions between two SIP peers. The purpose of a dialog is to setup, possibly modify, and then teardown a session. Hence the name Session Initiation Protocol. Since there could be many dialogs in progress between two SIP peers at any time (e.g. there could be many simultaneous calls in progress between two SIP servers), dialogs are identified by the From, To, and Call-ID fields in the header. So if SIP peer A gets two BYE Requests at the same time, it can look at these fields to determine which dialog they belong to.
+A typical set of transactions you might see in a dialog could include:
+
+SIP peer A invites SIP peer B to a session and suggests a certain codec, but does not include authentication and so is rejected
+
+SIP peer A again invites SIP peer B to a session, this time supplying authentication, and the invitation is accepted
+
+SIP peer B sends an invitation to change the codec used, and it is accepted
+
+SIP peer A ends the session
+
    - A **dialog** is a series of related transactions between two SIP peers (user agents).
    - The purpose of a dialog is to set up, modify, and eventually tear down a **session**.
    - Dialogs are identified by specific fields in the SIP header, including:
@@ -165,15 +184,13 @@ Content-Type: (type of content)
      - Finally, SIP peer A ends the session.
 
 ## Sessions:
+A session is just a media stream (e.g. audio or video) flowing between peers, usually consisting of RTP (and possibly RTCP) packets. For example, if SIP is used to make a voice call, the session is the voice data that is sent between endpoints
+
    - A **session** represents the actual media stream (e.g., audio or video) flowing between peers.
    - It consists of RTP (Real-time Transport Protocol) packets (and possibly RTCP for control).
    - For instance, in a voice call, the session corresponds to the voice data transmitted between endpoints.
 
-In summary:
-- **Transactions** are individual message exchanges.
-- **Dialogs** group related transactions.
-- **Sessions** are the media streams exchanged during a dialog.
-
+![](http://telconotes.files.wordpress.com/2013/03/sip-transaction-vs-dialog.png)
 
 ## [Understanding ther SIP Via header](https://andrewjprokop.wordpress.com/2014/03/06/understanding-the-sip-via-header/)
 
