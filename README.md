@@ -139,6 +139,75 @@ Format
 Content-Type: (type of content)
 ```
 
+## Transactions:
+   - A **transaction** in SIP represents a sequence of messages exchanged between a **client** (usually the initiator) and a **server** (which responds to the client's requests).
+   - A transaction consists of the following components:
+     - **Request**: The initial message sent by the client (e.g., an INVITE request to establish a call).
+     - **Non-final Responses (1xx)**: Intermediate responses (such as 100 TRYING) that indicate the progress of the transaction.
+     - **Final Response (2xx, 3xx, 4xx, 5xx, or 6xx)**: The conclusive response (e.g., 200 OK) that completes the transaction.
+     - **Acknowledgments (ACK or PRACK)**: Acknowledgments for the received responses (except for ACKs to 2xx Responses).
+   - Example:
+     - SIP peer A sends an INVITE Request to SIP peer B.
+     - SIP peer B responds with a 100 TRYING (non-final response).
+     - SIP peer B then sends a 200 OK (final response), accepting the invitation, completing the transaction.
+
+## Dialogs:
+   - A **dialog** is a series of related transactions between two SIP peers (user agents).
+   - The purpose of a dialog is to set up, modify, and eventually tear down a **session**.
+   - Dialogs are identified by specific fields in the SIP header, including:
+     - **From**: Identifies the sender.
+     - **To**: Identifies the recipient.
+     - **Call-ID**: A globally unique identifier for the call.
+   - Example:
+     - SIP peer A invites SIP peer B to a session (e.g., a voice call) and suggests a codec.
+     - If rejected, SIP peer A retries with authentication, and the invitation is accepted.
+     - During the dialog, SIP peer B may propose a codec change, which is accepted.
+     - Finally, SIP peer A ends the session.
+
+## Sessions:
+   - A **session** represents the actual media stream (e.g., audio or video) flowing between peers.
+   - It consists of RTP (Real-time Transport Protocol) packets (and possibly RTCP for control).
+   - For instance, in a voice call, the session corresponds to the voice data transmitted between endpoints.
+
+In summary:
+- **Transactions** are individual message exchanges.
+- **Dialogs** group related transactions.
+- **Sessions** are the media streams exchanged during a dialog.
+
+
+## [Understanding ther SIP Via header](https://andrewjprokop.wordpress.com/2014/03/06/understanding-the-sip-via-header/)
+
+When a user agent client (UAC) creates a SIP request, it must insert a Via header into that request.  The Via header identifies the protocol name (SIP), protocol version (2.0), transport type (e.g. UDP or TCP), IP address of the UAC, and the protocol port (typically 5060) used for the request.  This information allows the recipient of the request (a user agent server) to return SIP responses to the correct device.  For example, if my SIP soft-phone were to send an INVITE request, it would contain a Via similar to the following.
+
+```
+Via: SIP/2.0/UDP 10.11.228.67:5060
+```
+
+If I were operating in a point-to-point configuration, the soft-phone that received the INVITE would  inspect the Via header to determine the location of my PC.  It would then use that information to return a “100 Trying” response.  Of course, unless I am in a lab environment, I never use SIP in a point-to-point fashion.  Here at work, there are all sorts of SIP components between my soft-phone and the soft-phone I am calling.  There is a Session Manager, Communication Manager, and perhaps a Session Border Controller between us.  Thankfully, via headers are not reserved for endpoints.  Every SIP entity uses them.
+
+The rules for processing Via headers are very simple.  Every UAC must add its own Via header before sending a SIP request.  If there is already a Via header in the message, the UAC adds the new one at the top of the list before sending it to the next hop.
+
+Remember that INVITE I sent in my example?  When it ends up on the called party’s device, it might contain several Via headers.  When the called party is ready to send the “100 Trying,” it simply removes the top Via header and sends the response to the indicated party.  In my work configuration, that top Via would most likely identify a Session Manager.  However, if the soft client was a remote user, it would be my company’s SBC.  It doesn’t matter, though.  Whoever receives the response will remove the top Via header and send it to the next hop.  This keeps happening until the Trying message lands on my PC.
+
+This Via stacking allows a SIP request to pass through any number of intermediaries and every recipient of that message will know exactly how to pass back any subsequent responses.
+
+Ah, but there’s more
+
+To keep things simple I failed to mention something important about Via headers.  Along with the protocol and IP information, every Via header contains a “branch” parameter.  Here is that Via again with a branch parameter I pulled from a Wireshark trace.
+
+```
+Via: SIP/2.0/UDP 10.11.228.67:5060; branch=z9hG4bK10_16a83292baa1de54e0b7843_I
+```
+
+The branch parameter must be unique across space and time for all requests sent by a user agent.  The exceptions to this rule are CANCEL and ACK for non-2xx responses.  A CANCEL will have the same branch parameter as the request it cancels.  An ACK for a non-2xx response will have the same branch parameter as the INVITE whose response it acknowledges.
+
+The uniqueness of the branch header is used to facilitate its use as a transaction ID.  A SIP transaction is a message exchange between two user agents that starts with a request and ends with a final response.  For a simple call, the INVITE through final response is one transaction, the ACK is another transaction, and the Bye through the 200 OK is yet another transaction.  All these transactions combine to make a single dialog.
+
+If you crave more knowledge about SIP message uniqueness, please see my blog, Let’s Play (SIP) Tag.
+
+The branch parameter always begins with the same string of seven characters — “z9hG4bK.”  This requirement was added to identify that the branch was created in accordance with RFC 3261 and not the older RFC 2543 which did not require global uniqueness
+
+
 # Kamailio Introduction
 Kamailio (formerly OpenSER) is an open source SIP server, but Kamailio is a bit difficult to grasp what “it is“, but once you understand it’s all very logical.
 
