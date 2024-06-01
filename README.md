@@ -224,6 +224,19 @@ If you crave more knowledge about SIP message uniqueness, please see my blog, Le
 
 The branch parameter always begins with the same string of seven characters — “z9hG4bK.”  This requirement was added to identify that the branch was created in accordance with RFC 3261 and not the older RFC 2543 which did not require global uniqueness
 
+## [Contact and Record-Route headers](https://kb.smartvox.co.uk/opensips/contact-and-record-route-headers-explained/)
+
+### Some Acronyms and terminology
+* UAC : User Agent Client (for example, a VoIP handset)
+* UAS : User Agent Server (for example, an IP-PBX such as Asterisk)
+* SIP Proxy : A server that operates as an intermediate node between the UAC and the UAS
+* URI : Uniform Resource Identifier. Typical format “sip:<username>@<domain>”
+* Sequential Request : A SIP request that is part of an already established dialogue. It will have a “to-tag”. Sequential requests follow after the initial request that established the dialogue
+
+The <domain> element is often shown as <host>, possibly to show it can be a domain or an IP address. It may also have a port number appended (after a colon separator). e.g. sip:12345@192.168.20.123:5144
+
+If you want to dig deeper into the terminology used to identify sub-components of the URI and see how it fits together with parameters in the context of a SIP header
+
 
 # Kamailio Introduction
 Kamailio (formerly OpenSER) is an open source SIP server, but Kamailio is a bit difficult to grasp what “it is“, but once you understand it’s all very logical.
