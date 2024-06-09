@@ -3117,6 +3117,38 @@ client
 sipp -sn usc -rsa 192.168.10.30:5060 -s 1010 
 ```
 
+* -d : Controls the length of calls. More precisely, this controls the duration of
+        'pause' instructions in the scenario, if they do not have a 'milliseconds'
+        section. Default value is 0 and default unit is milliseconds.
+
+
+Example :
+
+when use -d not use miliseconds in pause
+
+command
+```
+./sipp -sn uac 
+```
+
+scenario
+```
+<pause milliseconds="8000"/>
+```
+
+that config equal with :
+
+command
+```
+./sipp -sn uac -d 8s
+```
+
+scenario
+```
+<pause/>
+```
+
+
 ## Remote control
 SIPp can be “remote-controlled” through a UDP socket. This allows for example
 
