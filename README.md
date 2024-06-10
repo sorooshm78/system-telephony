@@ -2899,6 +2899,8 @@ Run sipp with embedded server (uas) scenario:
 # ./sipp -sn uas
 ```
 
+* must set remote_ip and remote_port in SIPp server 
+
 On the same host, run sipp with embedded client (uac) scenario:
 ```
 # ./sipp -sn uac 127.0.0.1
