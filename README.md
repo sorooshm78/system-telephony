@@ -3399,6 +3399,32 @@ In a recv, recvCmd or nop command you can execute one or more actions:
 * jump: jump to an arbitrary scenario index
 
 
+## Media/RTP commands
+RTP streaming allows you to stream audio from a PCMA, PCMU, G722, iLBC or G729-encoded audio file (e.g. a .wav file). The “rtp_stream” action controls this.
+
+* <exec rtp_stream=”file.wav” /> will stream the audio contained in file.wav, assuming it is a PCMA-format file.
+* <exec rtp_stream=”[filename],[loopcount],[payloadtype]” /> will stream the audio contained in [filename], repeat the stream [loopcount] times (the default is 1, and -1 indicates it will repeat forever), and will treat the audio as being of [payloadtype] (where 8 is the default of PCMA, 0 indicates PCMU, 9 indicates G722, 18 indicates G729 and 98 indicates iLBC in 30ms 13.33kbps).
+* <exec rtp_stream=”pause” /> will pause any currently active playback.
+* <exec rtp_stream=”resume” /> will resume any currently paused playback.
+PCAP play commands (specified using play_pcap_audio / play_pcap_video attributes) allow you to send a pre-recorded RTP stream using the pcap library. Choose play_pcap_audio to send the pre-recorded RTP stream using the “m=audio” SIP/SDP line port as a base for the replay.
+
+Choose play_pcap_video to send the pre-recorded RTP stream using the “m=video” SIP/SDP line port as a base.
+
+The play_pcap_audio/video command has the following format: play_pcap_audio=”[file_to_play]” with:
+
+* file_to_play: the pre-recorded pcap file to play
+
+The audio file should be the raw samples, example files are included for PCMA, G722 and iLBC (mode=30).
+
+```
+Codec	Payload id	Packet size	Packet time	FFMpeg arguments
+PCMU	0	160 bytes	20 ms	-f ulaw -ar 8k -ac 1
+PCMA	8	160 bytes	20 ms	-f alaw -ar 8k -ac 1
+G722	9	160 bytes	20 ms	-f g722 -ar 16k -ac 1
+G729	18	20 bytes	20 ms	not supported by ffmpeg
+iLBC	98	50 bytes	30 ms	-f ilbc -ar 8k -ac 1 -b:a 13.33k
+```
+
 # Voice Over IP
 ## Chapter 1
 ## Introduction 
