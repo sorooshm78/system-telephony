@@ -42,7 +42,6 @@
         * [Sipdump Module](#sipdump-module)
             * [Overview](#overview-sipdump)
             * [Params](#params-sipdump) 
-            * [Functions](#funcs-sipdump) 
         * [Dispatcher Module](#dispatcher-module)
             * [Links](#links)
             * [Params](#params-dispatcher)
@@ -1762,9 +1761,53 @@ The module should be useful for troubleshooting during development or testing of
 
 
 ### Params sipdump
+#### enable (int)
+Enable sipdump activity.
 
+Default value is 0 (0 - off; 1 - on).
 
-### Funcs sipdump
+Example 1.1. Set enable parameter
+```
+...
+modparam("sipdump", "enable", 1)
+...
+```
+
+#### enable (int)
+Enable sipdump activity.
+
+Default value is 0 (0 - off; 1 - on).
+
+Example 1.1. Set enable parameter
+```
+...
+modparam("sipdump", "enable", 1)
+...
+```
+
+#### folder (str)
+Path to the folder where to save the files.
+
+Default value is "/tmp".
+
+Example 1.5. Set folder parameter
+```
+...
+modparam("sipdump", "folder", "/run/kamailio")
+...
+```
+
+#### fprefix (str)
+File name prefix. The date is appended to this prefix in the format yyyy-mm-dd--hh-mm-ss. The extension of the text file is ".data", of the meta file is ".meta" and of the pcap file is ".pcap".
+
+Default value is "kamailio-sipdump-".
+
+Example 1.6. Set fprefix parameter
+```
+...
+modparam("sipdump", "fprefix", "ksipdump-")
+...
+```
 
 ## Dispatcher Module
 ### Links
