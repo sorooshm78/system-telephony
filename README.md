@@ -34,11 +34,15 @@
     * [Kamailio Module](#kamailio-module)
         * [Mysql Module](#mysql-module)
         * [Secfilter Module](#secfilter-module)
-            * [Overview](#overview)
+            * [Overview](#overview-secfilter)
             * [Dependencies](#dependencies)
             * [Database setup](#database-setup)
             * [Params](#params-secfilter)
             * [Functions](#funcs-secfilter)
+        * [Sipdump Module](#sipdump-module)
+            * [Overview](#overview-sipdump)
+            * [Params](#params-sipdump) 
+            * [Functions](#funcs-sipdump) 
         * [Dispatcher Module](#dispatcher-module)
             * [Links](#links)
             * [Params](#params-dispatcher)
@@ -1511,7 +1515,7 @@ in kamailio.config
     ```
 
 ## SecFilter Module
-### Overview
+### Overview Secfilter
 This module has been designed to offer an additional layer of security over our communications. To achieve this, the following features are available:
 
 - Blacklist to block user agents, IP addresses, countries, domains and users.
@@ -1745,6 +1749,22 @@ if (is_method("INVITE")) {
 }
 ...
 ```
+
+## Sipdump Module
+### Overview sipdump
+This module writes SIP traffic and some associated details into local files. It intercepts automatically all the SIP traffic received or sent by Kamailio and provides a function to trigger storage from configuration file.
+
+Received traffic has the tag 'rcv' and the one to be sent has the tag 'snd'. The tag value is provided as parameter for the config function.
+
+Besides the SIP packets, the module aims to save details related to Kamailio runtime environment that are useful for troubleshooting, like process id, child rank, a.s.o.
+
+The module should be useful for troubleshooting during development or testing of new deployments, especially when dealing with traffic over TLS with forward privacy, when other tools such as wireshark cannot decrypt. For production environments with a lot of SIP traffic, look at siptrace and sipcapture modules for a scalable alternative to capture all the SIP traffic and then search using Homer Sipcapture web toolkit.
+
+
+### Params sipdump
+
+
+### Funcs sipdump
 
 ## Dispatcher Module
 ### Links
