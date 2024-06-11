@@ -3546,9 +3546,45 @@ Many telecoms have gradually replaced outdated PSTN infrastructure with modern I
 ![](https://www.nextiva.com/blog/wp-content/uploads/sites/2/2023/07/PSTN-usage-worldwide-2022-chart.png)
 
 ### How PSTN Works Today
+Think of a PSTN as a combination of worldwide telephone networks, including telephone lines, fiber optic cables, switching centers, cellular networks, satellites, and cable systems. PSTN helps telephones communicate with each other.
 
+Put simply, when you dial a phone number, your call moves through the network to reach its destination – and two phones connect. To fully understand how Plain Old Telephone Service (POTS) works, consider what happens when you dial a number from your phone.
 
+### From telephone handset to Central Office
+Your telephone set converts your call (sound waves) into electrical signals and transmits them over network cables to a nearby exchange or terminal. The terminal collects these signals and determines where your voice (converted into electrical signals) goes next.
 
+### Central Office call routing
+The call next goes to a tandem office (a regional hub that routes calls to distant central offices) or to a central office (for local calls). The central office routes the call through a fiber optic cable that converts the electrical signals into light pulses.
+
+### From the Central Office to the terminating number 
+The relevant center office picks up the light pulses, converts them into electrical signals, and sends them to the target terminal. The destination terminal forwards the call through sound waves to the appropriate telephone number.
+
+It’s natural to be confused about how PSTN works behind the scenes. Remember that it takes a few seconds for your call to reach its destination via fiber optic cables and a global network of switches. It’s like changing buses to reach your final destination, only faster.
+
+Nationwide calling is the norm, thanks to interconnected telephone networks. But since the lines were installed, telecom providers have since become pioneers in data networks, which operate faster and carry VoIP and other communication technologies.
+
+### PSTN Architecture
+PSTNs are all about switching, which forms the backbone of traditional telephone networks. When a call is made, switches create a wired connection between two phones, maintaining it for as long as the call lasts.
+
+![](https://www.nextiva.com/blog/wp-content/uploads/sites/2/2023/07/How-POTS-Works.png)
+
+Here are the four main elements that make up the PSTN architecture.
+
+1. The local exchange: A local exchange – consisting of one or more exchanges – connects subscribers to a PSTN line. Also known as a central office or a switching exchange, a telephone exchange can have up to 10,000 lines. All phones are connected to the local exchange in a specific area. 
+
+2. The exchange identifies the number dialed to route the call to the correct destination.
+
+3. The tandem office: Also known as a junction network, a tandem office serves a large geographic area with multiple local exchanges while managing switches between local exchanges. Let’s say you dial the number of a client living in the same city but in another suburb. In this case, your call routes to a tandem office from your local exchange. The tandem office forwards the signal to the local exchange closest to your client’s location.
+
+4. The toll office: Every national long-distance switching takes place here. A toll office is connected to all tandem offices. For instance, if you dial a branch of your office in another city, your call will go through a toll office.
+The international gateway: International gateways manage international call switching, routing domestic calls to the appropriate countries.
+
+### Private Branch Exchange (PBX)
+Large companies with 40 or more employees typically opt for a Private Branch Exchange (PBX).
+
+One of the types of PBX systems connects calls over the PSTN. Generally, PSTN is more used in residential applications and PBX systems in business environments. It offers call transfer, call conferencing, auto attendant, voicemail, call holding, and more business-specific features.
+
+Since a PBX comes with hubs, switches, phone adapters, routers, and several telephone sets, it costs more. Most businesses use PBX phone systems because they’re easier to use. However, installing and managing them is expensive. Actual costs may vary depending on the number of features you want and the PBX’s complexity.
 
 ### ترجمه
 می‌دانیم **PSTN مخفف عبارت Public Switched Telephone Network** است. PSTN به سیستم تلفن سنتی مورد استفاده برای ارتباطات صوتی اشاره دارد. این شامل چندین حامل متصل به هم است تا افراد را به طور قابل اعتماد از طریق شماره تلفن های استاندارد متصل کند. شبکه تلفن سوئیچ شده عمومی
@@ -3568,5 +3604,34 @@ Many telecoms have gradually replaced outdated PSTN infrastructure with modern I
 
 بسیاری از مخابرات به تدریج زیرساخت های قدیمی PSTN را با شبکه های مبتنی بر IP مدرن که قادر به مدیریت ترافیک صوتی و داده هستند، جایگزین کرده اند.
 
+PSTN را به عنوان ترکیبی از شبکه های تلفن در سراسر جهان، از جمله خطوط تلفن، کابل های فیبر نوری، مراکز سوئیچینگ، شبکه های سلولی، ماهواره ها و سیستم های کابلی در نظر بگیرید. PSTN به تلفن ها کمک می کند تا با یکدیگر ارتباط برقرار کنند.
 
+به زبان ساده، وقتی شماره تلفنی را شماره گیری می کنید، تماس شما از طریق شبکه حرکت می کند تا به مقصد برسد - و دو تلفن به هم متصل می شوند. برای درک کامل نحوه عملکرد سرویس تلفن قدیمی ساده (POTS)، در نظر بگیرید که وقتی شماره ای را از تلفن خود می گیرید چه اتفاقی می افتد.
 
+مجموعه تلفن شما تماس شما (امواج صوتی) را به سیگنال های الکتریکی تبدیل می کند و آنها را از طریق کابل های شبکه به یک سانترال یا ترمینال نزدیک منتقل می کند. ترمینال این سیگنال‌ها را جمع‌آوری می‌کند و تعیین می‌کند که صدای شما (تبدیل به سیگنال‌های الکتریکی) به کجا برسد.
+
+تماس بعدی به یک دفتر پشت سر هم (یک مرکز منطقه ای که تماس ها را به دفاتر مرکزی دوردست هدایت می کند) یا به یک دفتر مرکزی (برای تماس های محلی) می رود. دفتر مرکزی تماس را از طریق یک کابل فیبر نوری هدایت می کند که سیگنال های الکتریکی را به پالس های نور تبدیل می کند.
+
+دفتر مرکز مربوطه پالس های نور را دریافت می کند، آنها را به سیگنال های الکتریکی تبدیل می کند و به ترمینال مورد نظر می فرستد. ترمینال مقصد تماس را از طریق امواج صوتی به شماره تلفن مناسب ارسال می کند.
+
+طبیعی است که در مورد نحوه عملکرد PSTN در پشت صحنه سردرگم شوید. به یاد داشته باشید که چند ثانیه طول می کشد تا تماس شما از طریق کابل های فیبر نوری و شبکه جهانی سوئیچ ها به مقصد برسد. مانند تعویض اتوبوس برای رسیدن به مقصد نهایی، فقط سریعتر.
+
+به لطف شبکه های تلفن متصل به هم، تماس در سراسر کشور عادی است. اما از زمانی که خطوط نصب شدند، ارائه دهندگان مخابراتی از آن زمان پیشگام در شبکه های داده شده اند که سریعتر کار می کنند و VoIP و سایر فناوری های ارتباطی را حمل می کنند.
+
+PSTN ها همه در مورد سوئیچینگ هستند که ستون فقرات شبکه های تلفن سنتی را تشکیل می دهند. هنگامی که تماس برقرار می شود، سوئیچ ها یک اتصال سیمی بین دو تلفن ایجاد می کنند و آن را تا زمانی که تماس ادامه دارد حفظ می کنند.
+
+در اینجا چهار عنصر اصلی تشکیل دهنده معماری PSTN آورده شده است.
+
+صرافی محلی: یک صرافی محلی – متشکل از یک یا چند صرافی – مشترکین را به یک خط PSTN متصل می کند. یک مرکز تلفن که به عنوان دفتر مرکزی یا سانترال سوئیچینگ نیز شناخته می شود، می تواند تا 10000 خط داشته باشد. همه تلفن ها در یک منطقه خاص به صرافی محلی متصل هستند. صرافی شماره تماس گرفته شده را برای هدایت تماس به مقصد صحیح شناسایی می کند.
+
+دفتر پشت سر هم: همچنین به عنوان یک شبکه اتصال شناخته می شود، یک دفتر پشت سر هم به یک منطقه جغرافیایی بزرگ با چندین صرافی محلی خدمات می دهد در حالی که سوئیچ ها را بین صرافی های محلی مدیریت می کند. فرض کنید شماره مشتری را که در همان شهر زندگی می کند اما در حومه دیگری زندگی می کند، شماره گیری می کنید. در این مورد، تماس شما از صرافی محلی شما به یک دفتر پشت سر هم می رسد. دفتر پشت سر هم سیگنال را به صرافی محلی نزدیک به محل مشتری شما ارسال می کند.
+
+اداره عوارض: همه جابجایی مسافت های طولانی در اینجا انجام می شود. یک دفتر عوارض به تمام دفاتر پشت سر هم متصل است. به عنوان مثال، اگر با شعبه ای از دفتر خود در شهر دیگری تماس بگیرید، تماس شما از طریق دفتر عوارض انجام می شود.
+
+دروازه بین المللی: دروازه های بین المللی سوئیچینگ تماس های بین المللی را مدیریت می کنند و تماس های داخلی را به کشورهای مناسب هدایت می کنند.
+
+شرکت های بزرگ با 40 کارمند یا بیشتر معمولاً صرافی شعبه خصوصی (PBX) را انتخاب می کنند.
+
+یکی از انواع سیستم های PBX تماس ها را از طریق PSTN متصل می کند. به طور کلی، PSTN بیشتر در برنامه های مسکونی و سیستم های PBX در محیط های تجاری استفاده می شود. این برنامه انتقال تماس، کنفرانس تماس، مهماندار خودکار، پست صوتی، برگزاری تماس و ویژگی‌های بیشتر کسب و کار را ارائه می‌دهد.
+
+از آنجایی که یک PBX با هاب ها، سوئیچ ها، آداپتورهای تلفن، روترها و چندین دستگاه تلفن همراه است، هزینه بیشتری دارد. اکثر مشاغل از سیستم های تلفن PBX استفاده می کنند زیرا استفاده از آنها آسان تر است. با این حال، نصب و مدیریت آنها گران است. هزینه های واقعی ممکن است بسته به تعداد ویژگی هایی که می خواهید و پیچیدگی سانترال متفاوت باشد.
