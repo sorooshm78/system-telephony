@@ -3513,4 +3513,17 @@ iLBC	98	50 bytes	30 ms	-f ilbc -ar 8k -ac 1 -b:a 13.33k
 
 کیفیت درک شده می تواند کمی متفاوت باشد، اما شکی نیست که انحصار شرکت های تلفن سنتی شکسته شده است و این صنعت به دنبال کارمندانی است که دانش VoIP را در مجموعه مهارت های خود داشته باشند.
 
+## What Is VoIP?
+برای شروع، VoIP دقیقاً همان چیزی است که نام آن نشان دهنده ارسال صدا (و ویدیو) از طریق یک شبکه مبتنی بر IP است
+
+این کاملاً متفاوت از شبکه تلفن عمومی سوئیچ مدار است (circuit-switched public telephone network) که من با آن بزرگ شدم در circuit switching منابع را به هر تماس اختصاص می دهد.
+
+شبکه های IP به صورت بسته سوئیچ می شوند و هر بسته ارسالی نیمه مستقل است، هدر IP خود را دارد و به طور جداگانه توسط روترها ارسال می شود. فصل های 3 تا 7 ما را با جزئیات فنی در مورد عملکرد یک سیستم VoIP آشنا می کند، اما معلوم می شود که درک VoIP و انگیزه آن اغلب به درک تأثیرات VoIP است که می تواند قابل توجه باشد.
+
+### What is PSTN? 
+**PSTN is short for Public Switched Telephone Network**. PSTN refers to the traditional telephone system used for voice-oriented communications. It consists of multiple interconnected carriers to reliably connect people through standard phone numbers. Public Switched Telephone Network
+This telephone network is known as analog, landlines, Plain Old Telephone Service (POTS), or fixed lines. This system has been in general use since the late 1800s. Using underground copper wires and circuit-switching, this legacy service has provided businesses and households with a reliable means to communicate with anyone worldwide for generations.
+
+![](https://www.nextiva.com/blog/wp-content/uploads/sites/2/2023/07/telephone-lines-power-lines.jpeg)
+
 
