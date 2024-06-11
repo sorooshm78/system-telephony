@@ -3526,4 +3526,47 @@ This telephone network is known as analog, landlines, Plain Old Telephone Servic
 
 ![](https://www.nextiva.com/blog/wp-content/uploads/sites/2/2023/07/telephone-lines-power-lines.jpeg)
 
+### PSTN History & Background
+The roots of PSTN can be traced back to the late 1800s when inventors like Alexander Graham Bell and Elisha Gray released the first usable telephone systems. These early phones used copper wires and could only communicate point-to-point.
+
+Manual switchboards caught on in the late 1800s and early 1900s. These exchanges allowed operators to plug and unplug cords to connect calls manually.
+
+A major change came in the late 20th century with automated switching, which eliminated the need for manual call handling. This is when the traditional PSTN came into play and later spread worldwide. Undersea cables and satellite communications further facilitated international voice communications
+
+![](https://www.nextiva.com/blog/wp-content/uploads/sites/2/2023/07/telephone-system-122820_1280.jpg)
+
+Despite all the innovations in PSTN, it remained an old, sluggish, and limited technology. The need for better communication, especially in the business environment, gave way to VoIP phones
+
+PSTN phones are widely used and still accepted as a standard form of communication owing to their reliability and worldwide infrastructure. However, they’ve seen a steady decline over the last decade.
+
+In fact, there are currently just 862 million fixed-line telephone subscriptions in use worldwide, the lowest this century. 
+
+Many telecoms have gradually replaced outdated PSTN infrastructure with modern IP-based networks capable of handling both voice and data traffic.
+
+![](https://www.nextiva.com/blog/wp-content/uploads/sites/2/2023/07/PSTN-usage-worldwide-2022-chart.png)
+
+### How PSTN Works Today
+
+
+
+
+### ترجمه
+می‌دانیم **PSTN مخفف عبارت Public Switched Telephone Network** است. PSTN به سیستم تلفن سنتی مورد استفاده برای ارتباطات صوتی اشاره دارد. این شامل چندین حامل متصل به هم است تا افراد را به طور قابل اعتماد از طریق شماره تلفن های استاندارد متصل کند. شبکه تلفن سوئیچ شده عمومی
+این شبکه تلفنی با نام های آنالوگ، خطوط ثابت، خدمات تلفن قدیمی ساده (POTS) یا خطوط ثابت شناخته می شود. این سیستم از اواخر دهه 1800 مورد استفاده عمومی قرار گرفت. این سرویس قدیمی با استفاده از سیم‌های مسی زیرزمینی و سوئیچینگ مدار، ابزار قابل اعتمادی را برای کسب‌وکارها و خانوارها برای برقراری ارتباط با هر کسی در سراسر جهان برای نسل‌ها فراهم کرده است.
+
+ریشه PSTN را می توان به اواخر دهه 1800 ردیابی کرد، زمانی که مخترعانی مانند الکساندر گراهام بل و الیشا گری اولین سیستم های تلفن قابل استفاده را منتشر کردند. این تلفن های اولیه از سیم های مسی استفاده می کردند و فقط می توانستند نقطه به نقطه ارتباط برقرار کنند.
+
+تابلوهای دستی در اواخر دهه 1800 و اوایل دهه 1900 مورد استفاده قرار گرفتند. این مبادلات به اپراتورها اجازه می‌داد تا سیم‌ها را برای اتصال دستی تماس‌ها وصل و جدا کنند.
+
+یک تغییر عمده در اواخر قرن بیستم با سوئیچینگ خودکار رخ داد که نیاز به مدیریت تماس دستی را از بین برد. این زمانی بود که PSTN سنتی وارد بازی شد و بعداً در سراسر جهان گسترش یافت. کابل های زیردریایی و ارتباطات ماهواره ای بیشتر ارتباطات صوتی بین المللی را تسهیل کردند
+
+علیرغم تمام نوآوری ها در PSTN، این یک فناوری قدیمی، کند و محدود باقی ماند. نیاز به ارتباطات بهتر به خصوص در محیط کسب و کار جای خود را به تلفن های VoIP داد
+
+تلفن‌های PSTN به دلیل قابلیت اطمینان و زیرساخت جهانی آن‌ها به‌طور گسترده مورد استفاده قرار می‌گیرند و همچنان به عنوان یک شکل استاندارد ارتباطی پذیرفته می‌شوند. با این حال، آنها در دهه گذشته شاهد کاهش مداوم بوده اند.
+
+در واقع، در حال حاضر تنها 862 میلیون اشتراک تلفن ثابت در سراسر جهان در حال استفاده است که کمترین میزان در قرن حاضر است.
+
+بسیاری از مخابرات به تدریج زیرساخت های قدیمی PSTN را با شبکه های مبتنی بر IP مدرن که قادر به مدیریت ترافیک صوتی و داده هستند، جایگزین کرده اند.
+
+
 
