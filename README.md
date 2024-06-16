@@ -3701,7 +3701,24 @@ cat /sys/class/net/<interface_name>/queues/rx-<queue_number>/rps_cpus
 ```
 It should display the same CPU mask you set earlier.
 
+**Control the number of entries in the global table (rps_sock_flow_table) by using a kernel parameter:**
+```
+# sysctl -a |grep net.core.rps_sock_flow_entries
+net.core.rps_sock_flow_entries = 0
+# sysctl -w net.core.rps_sock_flow_entries=32768
+net.core.rps_sock_flow_entries = 32768
+```
 
+if queue is 8 then 32768/8=4096
+
+**Specify the number of entries in the hash table of each NIC queue:**
+```
+#  cat /sys/class/net/<interface_name>/queues/rx-<queue_number>/rps_flow_cnt
+0
+# echo 4096 > /sys/class/net/<interface_name>/queues/rx-<queue_number>/rps_flow_cnt
+#  cat /sys/class/net/<interface_name>/queues/rx-<queue_number>/rps_flow_cnt
+4096
+```
 
 # Voice Over IP
 ## Chapter 1
