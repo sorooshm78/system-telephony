@@ -3583,7 +3583,25 @@ When enabled, RSS distributes network processing equally between available CPUs 
 The irqbalance daemon can be used in conjunction with RSS to reduce the likelihood of cross-node memory transfers and cache line bouncing. This lowers the latency of processing network packets. If both irqbalance and RSS are in use, lowest latency is achieved by ensuring that irqbalance directs interrupts associated with a network device to the appropriate RSS queue.
 
 
+### Receive Packet Steering (RPS)
+Receive Packet Steering (RPS) is similar to RSS in that it is used to direct packets to specific CPUs for processing. However, RPS is implemented at the software level, and helps to prevent the hardware queue of a single network interface card from becoming a bottleneck in network traffic.
 
+RPS has several advantages over hardware-based RSS:
+* RPS can be used with any network interface card.
+* It is easy to add software filters to RPS to deal with new protocols.
+* RPS does not increase the hardware interrupt rate of the network device. However, it does introduce inter-processor interrupts.
+
+RPS is configured per network device and receive queue, in the /sys/class/net/device/queues/rx-queue/rps_cpus file, where device is the name of the network device (such as eth0) and rx-queue is the name of the appropriate receive queue (such as rx-0).
+
+The default value of the rps_cpus file is zero. This disables RPS, so the CPU that handles the network interrupt also processes the packet.
+
+To enable RPS, configure the appropriate rps_cpus file with the CPUs that should process packets from the specified network device and receive queue.
+
+The rps_cpus files use comma-delimited CPU bitmaps. Therefore, to allow a CPU to handle interrupts for the receive queue on an interface, set the value of their positions in the bitmap to 1. For example, to handle interrupts with CPUs 0, 1, 2, and 3, set the value of rps_cpus to 00001111 (1+2+4+8), or f (the hexadecimal value for 15).
+
+For network devices with single transmit queues, best performance can be achieved by configuring RPS to use CPUs in the same memory domain. On non-NUMA systems, this means that all available CPUs can be used. If the network interrupt rate is extremely high, excluding the CPU that handles network interrupts may also improve performance.
+
+For network devices with multiple queues, there is typically no benefit to configuring both RPS and RSS, as RSS is configured to map a CPU to each receive queue by default. However, RPS may still be beneficial if there are fewer hardware queues than CPUs, and RPS is configured to use CPUs in the same memory domain.
 
 
 
