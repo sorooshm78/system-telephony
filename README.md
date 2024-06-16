@@ -3541,11 +3541,46 @@ IRQbalance can cause some issues during operation:
 
 * IRQbalance is enabled but does not take effect, that is, does not specify a CPU for handling interrupts.
 
+### Receive-Side Scaling (RSS)
+Receive-Side Scaling (RSS), also known as multi-queue receive, distributes network receive processing across several hardware-based receive queues, allowing inbound network traffic to be processed by multiple CPUs. RSS can be used to relieve bottlenecks in receive interrupt processing caused by overloading a single CPU, and to reduce network latency.
 
+To determine whether your network interface card supports RSS, check whether multiple interrupt request queues are associated with the interface in /proc/interrupts. For example, if you are interested in the p1p1 interface:
 
+```
+# egrep 'CPU|p1p1' /proc/interrupts
+      CPU0    CPU1    CPU2    CPU3    CPU4    CPU5
+89:   40187       0       0       0       0       0   IR-PCI-MSI-edge   p1p1-0
+90:       0     790       0       0       0       0   IR-PCI-MSI-edge   p1p1-1
+91:       0       0     959       0       0       0   IR-PCI-MSI-edge   p1p1-2
+92:       0       0       0    3310       0       0   IR-PCI-MSI-edge   p1p1-3
+93:       0       0       0       0     622       0   IR-PCI-MSI-edge   p1p1-4
+94:       0       0       0       0       0    2475   IR-PCI-MSI-edge   p1p1-5
+```
 
+The preceding output shows that the NIC driver created 6 receive queues for the p1p1 interface (p1p1-0 through p1p1-5). It also shows how many interrupts were processed by each queue, and which CPU serviced the interrupt. In this case, there are 6 queues because by default, this particular NIC driver creates one queue per CPU, and this system has 6 CPUs. This is a fairly common pattern amongst NIC drivers.
 
+Alternatively, you can check the output of ls -1 /sys/devices/*/*/device_pci_address/msi_irqs after the network driver is loaded. For example, if you are interested in a device with a PCI address of 0000:01:00.0, you can list the interrupt request queues of that device with the following command:
 
+```
+# ls -1 /sys/devices/*/*/0000:01:00.0/msi_irqs
+101
+102
+103
+104
+105
+106
+107
+108
+109
+```
+
+RSS is enabled by default. The number of queues (or the CPUs that should process network activity) for RSS are configured in the appropriate network device driver. For the bnx2x driver, it is configured in num_queues. For the sfc driver, it is configured in the rss_cpus parameter. Regardless, it is typically configured in /sys/class/net/device/queues/rx-queue/, where device is the name of the network device (such as eth1) and rx-queue is the name of the appropriate receive queue.
+
+When configuring RSS, Red Hat recommends limiting the number of queues to one per physical CPU core. Hyper-threads are often represented as separate cores in analysis tools, but configuring queues for all cores including logical cores such as hyper-threads has not proven beneficial to network performance.
+
+When enabled, RSS distributes network processing equally between available CPUs based on the amount of processing each CPU has queued. However, you can use the ethtool --show-rxfh-indir and --set-rxfh-indir parameters to modify how network activity is distributed, and weight certain types of network activity as more important than others.
+
+The irqbalance daemon can be used in conjunction with RSS to reduce the likelihood of cross-node memory transfers and cache line bouncing. This lowers the latency of processing network packets. If both irqbalance and RSS are in use, lowest latency is achieved by ensuring that irqbalance directs interrupts associated with a network device to the appropriate RSS queue.
 
 
 
