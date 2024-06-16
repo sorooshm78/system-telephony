@@ -54,6 +54,7 @@
         * [Ctl Module](#ctl-module)
             * [Params](#params-ctl)
 * [sipp](#sipp)     
+* [Linux](#linux)     
 * [Voice over IP](#voice-over-ip)       
         
 
@@ -3489,6 +3490,69 @@ G722	9	160 bytes	20 ms	-f g722 -ar 16k -ac 1
 G729	18	20 bytes	20 ms	not supported by ffmpeg
 iLBC	98	50 bytes	30 ms	-f ilbc -ar 8k -ac 1 -b:a 13.33k
 ```
+
+
+# Linux
+## Interrupts
+### Links
+
+* [Understanding CPU Interrupts](https://alibaba-cloud.medium.com/understanding-cpu-interrupts-in-linux-8af22d6e548a)
+* [Receive-Side Scaling (RSS)](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/performance_tuning_guide/network-rss#doc-wrapper)
+* [Receive Packet Steering (RPS)](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/performance_tuning_guide/network-rps)
+* [Receive Flow Steering (RFS)](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/performance_tuning_guide/network-rfs)
+* [CPU affinity calculator](https://bitsum.com/tools/cpu-affinity-calculator)
+
+
+### Understanding CPU Interrupts
+### What Is an Interrupt?
+When a hardware component (such as a disk controller or an Ethernet NIC) needs to interrupt the work of the CPU, it triggers an interrupt. The interrupt notifies the CPU that an event occurred and the CPU should suspend its current work to deal with the event. To prevent multiple devices from sending the same interrupt, Linux provides an interrupt request system so that each device in the computer system is assigned an interrupt number to ensure the uniqueness of its interrupt request.
+
+In kernel 2.4 and later, Linux improves the capability of assigning specific interrupts to the specified processors (or processor groups). This is called the SMP IRQ affinity, which controls how the system responds to various hardware events. You can limit or redistribute the server workload so that the server can work more efficiently.
+
+Let’s take NIC interrupts as an example. Without the SMP IRQ affinity, all NIC interrupts are associated with CPU 0. As a result, CPU 0 is overloaded and cannot efficiently process network packets, causing a bottleneck in performance.
+
+After you configure the SMP IRQ affinity, multiple NIC interrupts are allocated to multiple CPUs to distribute the CPU workload and speed up data processing. The SMP IRQ affinity requires NICs to support multiple queues. A NIC supporting multiple queues has multiple interrupt numbers, which can be evenly allocated to different CPUs.
+
+You can simulate a multi-queue mode for a single-queue NIC by means of receive packet steering (RPS) or receive flow steering (RFS), but the effect is poorer than that of a multi-queue NIC with RPS/RFS enabled.
+
+
+### What Are RPS and RFS?
+Receive packet steering (RPS) balances the load of soft interrupts among CPUs. In short, the NIC driver calculates a hash ID for each stream by using a quadruplet (SIP, SPORT, DIP, and DPORT), and the interrupt handler allocates the hash ID to the corresponding CPU, thus fully utilizing the multi-core capability. Generally, RPS simulates functions of a multi-queue NIC by using software. If a NIC supports multiple queues, RPS is ineffective. RPS is mainly intended for single-queue NICs in a multi-CPU environment. If a NIC supports multiple queues, you can directly bind hard interrupts to CPUs by configuring the SMP IRQ affinity.
+
+![](https://miro.medium.com/v2/resize:fit:828/format:webp/0*Tjj5kzCpNcuuVvtR.png)
+
+RPS simply distributes data packets to different CPUs. This greatly degrades the utilization of CPU caches when different CPUs are used to run applications and handle soft interrupts. In this case, RFS ensures that one CPU is used to run applications and handle soft interrupts, to fully utilize the CPU caches. RPS and RFS are usually used together to achieve the best results. They are mainly intended for single-queue NICs in a multi-CPU environment.
+
+![](https://miro.medium.com/v2/resize:fit:828/format:webp/0*YDvx-JGgtipsUl3z.png)
+
+The values of rps_flow_cnt and rps_sock_flow_entries are carried to the nearest power of 2. For a single-queue device, rps_flow_cnt is equal to rps_sock_flow_entries.
+
+Receive flow steering (RFS), together with RPS, inserts data packets into the backlog queue of a specified CPU, and wakes up the CPU for execution.
+
+IRQbalance is applicable to most scenarios. However, in scenarios requiring high network performance, you are recommended to bind interrupts manually.
+
+IRQbalance can cause some issues during operation:
+
+* The calculated value is sometimes inappropriate, failing to achieve load balancing among CPUs.
+
+* When the system is idle and IRQs are in power-save mode, IRQbalance distributes all interrupts to the first CPU, to make other idle CPUs sleep and reduce energy consumption. When the load suddenly rises, performance may be degraded due to the lag in adjustment.
+
+* The CPU specified to handle interrupts frequently changes, resulting in more context switches.
+
+* IRQbalance is enabled but does not take effect, that is, does not specify a CPU for handling interrupts.
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Voice Over IP
 ## Chapter 1
