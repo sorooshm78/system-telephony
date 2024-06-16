@@ -3603,8 +3603,29 @@ For network devices with single transmit queues, best performance can be achieve
 
 For network devices with multiple queues, there is typically no benefit to configuring both RPS and RSS, as RSS is configured to map a CPU to each receive queue by default. However, RPS may still be beneficial if there are fewer hardware queues than CPUs, and RPS is configured to use CPUs in the same memory domain.
 
+### Receive Flow Steering (RFS)
+Receive Flow Steering (RFS) extends RPS behavior to increase the CPU cache hit rate and thereby reduce network latency. Where RPS forwards packets based solely on queue length, RFS uses the RPS backend to calculate the most appropriate CPU, then forwards packets based on the location of the application consuming the packet. This increases CPU cache efficiency.
 
+RFS is disabled by default. To enable RFS, you must edit two files:
 
+```
+/proc/sys/net/core/rps_sock_flow_entries
+```
+
+Set the value of this file to the maximum expected number of concurrently active connections. We recommend a value of 32768 for moderate server loads. All values entered are rounded up to the nearest power of 2 in practice.
+
+```
+/sys/class/net/device/queues/rx-queue/rps_flow_cnt
+```
+
+Replace device with the name of the network device you wish to configure (for example, eth0), and rx-queue with the receive queue you wish to configure (for example, rx-0).
+
+Set the value of this file to the value of rps_sock_flow_entries divided by N, where N is the number of receive queues on a device. For example, if rps_flow_entries is set to 32768 and there are 16 configured receive queues, rps_flow_cnt should be set to 2048. For single-queue devices, the value of rps_flow_cnt is the same as the value of rps_sock_flow_entries.
+
+Data received from a single sender is not sent to more than one CPU. If the amount of data received from a single sender is greater than a single CPU can handle, configure a larger frame size to reduce the number of interrupts and therefore the amount of processing work for the CPU. 
+
+Alternatively, consider NIC offload options or faster CPUs.
+Consider using numactl or taskset in conjunction with RFS to pin applications to specific cores, sockets, or NUMA nodes. This can help prevent packets from being processed out of order.
 
 
 # Voice Over IP
