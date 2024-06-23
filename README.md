@@ -3867,7 +3867,47 @@ sudo apt install vnstat
 
 ![](https://phoenixnap.com/kb/wp-content/uploads/2022/12/vnstat-interface.png)
 
+## dmesg
+dmesg is a command on Linux systems, including Ubuntu, used to examine and manage the kernel ring buffer. This buffer stores messages related to the system's kernel activities, such as hardware initialization, driver messages, and system events. These messages are crucial for diagnosing and troubleshooting hardware and driver-related issues.
 
+Here's an in-depth look at dmesg, including its usage, typical outputs, and common options:
+
+### Overview of dmesg
+Purpose: To display system messages that are typically logged by the kernel. This includes boot messages, hardware initialization, driver information, and errors.
+Location: dmesg reads from the kernel ring buffer, which is also accessible at /var/log/dmesg.
+Basic Usage
+The simplest way to use dmesg is to run it without any arguments:
+
+This outputs the entire kernel message buffer to the terminal. Given the large amount of information, it’s often useful to use tools like less to navigate through the output:
+```
+dmesg | less
+```
+
+Example Output:
+```
+[    0.000000] Initializing cgroup subsys cpuset
+[    0.000000] Initializing cgroup subsys cpu
+[    0.000000] Linux version 5.15.0-50-generic (buildd@lcy02-amd64-003) (gcc (Ubuntu 9.3.0-17ubuntu1~20.04) 9.3.0, GNU ld (GNU Binutils for Ubuntu) 2.34) #55-Ubuntu SMP Tue Sep 13 19:47:35 UTC 2022 (Ubuntu 5.15.0-50.55-generic 5.15.39)
+[    0.000000] Command line: BOOT_IMAGE=/boot/vmlinuz-5.15.0-50-generic root=UUID=e6f1edc2-0c7f-4e1f-9c5a-dfcf6b96f40d ro quiet splash
+...
+```
+
+### Filtering Messages by Keywords
+You can search for specific messages using grep:
+```
+dmesg | grep <keyword>
+```
+
+Example: To find all messages related to the eth0 network interface:
+```
+dmesg | grep eth0
+```
+
+### Summary
+dmesg is a powerful tool for viewing kernel messages in Linux, providing insights into hardware, drivers, and system events.
+Typical Usage: Includes filtering messages, following live logs, and decoding timestamps and log levels.
+Practical Applications: Useful for diagnosing hardware issues, driver problems, network troubles, and more.
+Understanding and utilizing dmesg effectively can be crucial for system administrators and anyone involved in maintaining Linux systems. It provides a wealth of information directly from the kernel, making it an invaluable tool for troubleshooting and system analysis
 
 # Voice Over IP
 ## Chapter 1
