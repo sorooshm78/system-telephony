@@ -3839,6 +3839,36 @@ ethtool -C eth0 adaptive-rx on
 ```
 This command enables adaptive RX interrupt coalescing on the NIC, allowing it to automatically adjust the coalescing parameters as needed.
 
+## Command-Line Network Monitoring Tools
+
+### Link
+* [Best Tools to Monitor Network Bandwidth on a Linux Server](https://phoenixnap.com/kb/linux-network-bandwidth-monitor-traffic)
+* [How to display network traffic in the terminal?](https://askubuntu.com/questions/257263/how-to-display-network-traffic-in-the-terminal)
+
+### bmon - Bandwidth Monitor and Rate Estimator
+bmon monitors bandwidth utilization, along with keeping a running rate estimate. It provides usage for each device individually, allowing users to track bandwidth across multiple network adapters.
+
+bmon captures network statistics and provides a human-friendly output. Another positive feature is that the output includes a graph, providing bandwidth usage at a glance.
+
+```
+sudo apt install bmon
+```
+
+![](https://i.sstatic.net/WqOh6.png)
+
+
+### vnStat - Network Traffic Monitor
+vnStat works by running a daemon that captures and records bandwidth data. It reads data from the kernel to stay light on resource usage. The tool can run in real-time by specifying the -l option. The key feature of vnStat are persistent records - as the daemon runs, it collects and stores bandwidth usage logs.
+
+The vnstat command can be used to display usage statistics, and it is best suited for statistical reporting. To install vnStat, run:
+```
+sudo apt install vnstat
+```
+
+![](https://phoenixnap.com/kb/wp-content/uploads/2022/12/vnstat-interface.png)
+
+
+
 # Voice Over IP
 ## Chapter 1
 ## Introduction 
