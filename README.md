@@ -3839,8 +3839,172 @@ ethtool -C eth0 adaptive-rx on
 ```
 This command enables adaptive RX interrupt coalescing on the NIC, allowing it to automatically adjust the coalescing parameters as needed.
 
-## Command-Line Network Monitoring Tools
 
+### Ofload
+### Link
+* [NIC Offloads](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/6/html/performance_tuning_guide/network-nic-offloads#network-nic-offloads)
+
+The default Ethernet maximum transfer unit (MTU) is 1500 bytes, which is the largest frame size that can usually be transmitted. This can cause system resources to be underutilized, for example, if there are 3200 bytes of data for transmission, it would mean the generation of three smaller packets. There are several options, called offloads, which allow the relevant protocol stack to transmit packets that are larger than the normal MTU. Packets as large as the maximum allowable 64KiB can be created, with options for both transmitting (Tx) and receiving (Rx). When sending or receiving large amounts of data this can mean handling one large packet as opposed to multiple smaller ones for every 64KiB of data sent or received. This means there are fewer interrupt requests generated, less processing overhead is spent on splitting or combining traffic, and more opportunities for transmission, leading to an overall increase in throughput.
+
+
+### Offload Types
+#### TCP Segmentation Offload (TSO)
+Uses the TCP protocol to send large packets. Uses the NIC to handle segmentation, and then adds the TCP, IP and data link layer protocol headers to each segment.
+
+#### UDP Fragmentation Offload (UFO)
+Uses the UDP protocol to send large packets. Uses the NIC to handle IP fragmentation into MTU sized packets for large UDP datagrams.
+
+#### Generic Segmentation Offload (GSO)
+Uses the TCP or UDP protocol to send large packets. If the NIC cannot handle segmentation/fragmentation, GSO performs the same operations, bypassing the NIC hardware. This is achieved by delaying segmentation until as late as possible, for example, when the packet is processed by the device driver.
+
+#### Large Receive Offload (LRO)
+Uses the TCP protocol. All incoming packets are re-segmented as they are received, reducing the number of segments the system has to process. They can be merged either in the driver or using the NIC. A problem with LRO is that it tends to resegment all incoming packets, often ignoring differences in headers and other information which can cause errors. It is generally not possible to use LRO when IP forwarding is enabled. LRO in combination with IP forwarding can lead to checksum errors. Forwarding is enabled if /proc/sys/net/ipv4/ip_forward is set to 1.
+
+#### Generic Receive Offload (GRO)
+Uses either the TCP or UDP protocols. GRO is more rigorous than LRO when resegmenting packets. For example it checks the MAC headers of each packet, which must match, only a limited number of TCP or IP headers can be different, and the TCP timestamps must match. Resegmenting can be handled by either the NIC or the GSO code.
+
+#### Using NIC Offloads
+Offloads should be used on high speed systems that transmit or receive large amounts of data and favor throughput over latency. Because using offloads greatly increases the capacity of the driver queue, latency can become an issue. An example of this would be a system transferring large amounts of data using large packet sizes, but is also running lots of interactive applications. Because interactive applications send small packets at timed intervals there is a very real risk that those packets may become 'trapped' in the buffer while larger packets in front of them are processed, causing unacceptable latency.
+To check current offload settings use the ethtool command. Some device settings may be listed as fixed, meaning they cannot be changed.
+
+Command syntax:
+```
+ethtool -k ethernet_device_name
+```
+
+Example 8.1. Check Current Offload Settings
+```
+$ ethtool -k em1
+Features for em1:
+rx-checksumming: on
+tx-checksumming: on
+tx-checksum-ipv4: off [fixed]
+tx-checksum-ip-generic: on
+tx-checksum-ipv6: off [fixed]
+tx-checksum-fcoe-crc: off [fixed]
+tx-checksum-sctp: off [fixed]
+scatter-gather: on
+tx-scatter-gather: on
+tx-scatter-gather-fraglist: off [fixed]
+tcp-segmentation-offload: on
+tx-tcp-segmentation: on
+tx-tcp-ecn-segmentation: off [fixed]
+tx-tcp6-segmentation: on
+udp-fragmentation-offload: off [fixed]
+generic-segmentation-offload: on
+generic-receive-offload: on
+large-receive-offload: off [fixed]
+rx-vlan-offload: on
+tx-vlan-offload: on
+ntuple-filters: off [fixed]
+receive-hashing: on
+highdma: on [fixed]
+rx-vlan-filter: off [fixed]
+vlan-challenged: off [fixed]
+tx-lockless: off [fixed]
+netns-local: off [fixed]
+tx-gso-robust: off [fixed]
+tx-fcoe-segmentation: off [fixed]
+tx-gre-segmentation: off [fixed]
+tx-ipip-segmentation: off [fixed]
+tx-sit-segmentation: off [fixed]
+tx-udp_tnl-segmentation: off [fixed]
+tx-mpls-segmentation: off [fixed]
+fcoe-mtu: off [fixed]
+tx-nocache-copy: off
+loopback: off [fixed]
+rx-fcs: off
+rx-all: off
+tx-vlan-stag-hw-insert: off [fixed]
+rx-vlan-stag-hw-parse: off [fixed]
+rx-vlan-stag-filter: off [fixed]
+l2-fwd-offload: off [fixed]
+busy-poll: off [fixed]
+```
+
+In `ethtool`, the term "offload" refers to various network offloading features supported by network interface cards (NICs). These features allow certain network processing tasks to be offloaded from the CPU to the NIC, which can improve overall system performance by freeing up CPU resources and reducing latency. 
+
+### Common Offload Features in `ethtool`
+
+Here are some of the most common offload features that you can manage with `ethtool`:
+
+#### 1. TCP Segmentation Offload (TSO)
+TSO allows the NIC to handle the segmentation of large TCP packets into smaller ones that fit the MTU (Maximum Transmission Unit) of the network, reducing the CPU load associated with this task.
+
+#### 2. Generic Segmentation Offload (GSO)
+GSO is similar to TSO but works with various types of traffic, not just TCP. It allows the NIC to segment large packets from the host into smaller packets.
+
+#### 3. Generic Receive Offload (GRO)
+GRO enables the NIC to merge multiple incoming packets from the same TCP stream into larger buffers before passing them up the stack, reducing CPU usage and improving performance.
+
+#### 4. Large Receive Offload (LRO)
+LRO aggregates incoming packets into larger ones, reducing the number of packets the CPU needs to process. This is mostly used in high-performance network environments.
+
+#### 5. Receive Side Scaling (RSS)
+RSS allows the NIC to distribute incoming network traffic across multiple CPU cores, improving parallelism and performance on multi-core systems.
+
+#### 6. Checksum Offload
+Checksum offload allows the NIC to handle the computation and verification of checksums for TCP/UDP packets, offloading this task from the CPU.
+
+### Using `ethtool` to Manage Offload Features
+
+#### Display Current Offload Settings
+
+To display the current offload settings for a network interface, you can use the following command:
+
+```bash
+ethtool -k <interface>
+```
+
+**Example:**
+
+```bash
+ethtool -k eth0
+```
+
+This command will display the offload settings for the `eth0` interface.
+
+#### Enable or Disable Offload Features
+
+To enable or disable a specific offload feature, you can use the `-K` option followed by the feature name and its desired state (`on` or `off`).
+
+**Syntax:**
+
+```bash
+ethtool -K <interface> <feature> <state>
+```
+
+**Examples:**
+
+- To enable TSO on `eth0`:
+
+  ```bash
+  ethtool -K eth0 tso on
+  ```
+
+- To disable GRO on `eth0`:
+
+  ```bash
+  ethtool -K eth0 gro off
+  ```
+
+### Conclusion
+Understanding and managing offload features with `ethtool` can help optimize network performance by leveraging the capabilities of your NIC. By offloading tasks such as packet segmentation, checksum computation, and traffic distribution to the NIC, you can reduce CPU load and improve the efficiency and speed of your network operations.
+
+* rx - receive (RX) checksumming
+* tx - transmit (TX) checksumming
+* sg - scatter-gather
+* tso - TCP segmentation offload
+* ufo - UDP fragmentation offload
+* gso - generic segmentation offload
+* gro - generic receive offload
+* lro - large receive offload
+* rxvlan - receive (RX) VLAN acceleration
+* txvlan - transmit (TX) VLAN acceleration
+* ntuple - receive (RX) ntuple filters and actions
+* rxhash - receive hashing offload
+
+## Command-Line Network Monitoring Tools
 ### Link
 * [Best Tools to Monitor Network Bandwidth on a Linux Server](https://phoenixnap.com/kb/linux-network-bandwidth-monitor-traffic)
 * [How to display network traffic in the terminal?](https://askubuntu.com/questions/257263/how-to-display-network-traffic-in-the-terminal)
