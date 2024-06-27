@@ -242,6 +242,133 @@ The <domain> element is often shown as <host>, possibly to show it can be a doma
 
 If you want to dig deeper into the terminology used to identify sub-components of the URI and see how it fits together with parameters in the context of a SIP header
 
+## Contact and Record-Route headers explained
+* [link](https://kb.smartvox.co.uk/opensips/contact-and-record-route-headers-explained/)
+
+Diagnosing some problems in the world of VoIP requires close inspection of the SIP messages being exchanged, but there are many occasions where a good understanding of loose routing will be invaluable. The headers that underpin loose routing are Contact, Record-Route and Route. In this post, I explain how they work and provide some insight into the way they interact.
+
+### Some Acronyms and terminology
+UAC : User Agent Client (for example, a VoIP handset)
+
+UAS : User Agent Server (for example, an IP-PBX such as Asterisk)
+
+SIP Proxy : A server that operates as an intermediate node between the UAC and the UAS
+
+URI * : Uniform Resource Identifier. Typical format “sip:<username>@<domain>”
+
+Sequential Request : A SIP request that is part of an already established dialogue. It will have a “to-tag”. Sequential requests follow after the initial request that established the dialogue.
+
+\* The <domain> element is often shown as <host>, possibly to show it can be a domain or an IP address. It may also have a port number appended (after a colon separator). e.g. sip:12345@192.168.20.123:5144
+
+If you want to dig deeper into the terminology used to identify sub-components of the URI and see how it fits together with parameters in the context of a SIP header, then you may find this article interesting.
+
+### What is the function of the Contact header?
+Contact headers contain a URI which should be used by other nodes and devices communicating with it (within the same dialogue) when they want to send it a SIP request. A Contact header is normally found in all SIP requests and is often found in SIP responses too. Its role is best illustrated by looking at examples.
+
+Beginning with the simplest possible case: Two endpoints; one initiates a dialogue by sending a SIP request (e.g. INVITE) to the other. The Contact header is inserted into the SIP request by the device initiating the dialogue (the UAC). It is received by the downstream endpoint (the UAS), which must store the Contact address URI in case it needs to use it later in the dialogue.
+
+![](https://kb.smartvox.co.uk/wp-content/uploads/Contact-header-simple-downstream.jpg)
+
+Remember that the routing of SIP responses – such as “180 Ringing” or “200 OK” – is determined by the Via headers. The Contact header is used by downstream endpoints when they need to send SIP requests back upstream. However, it is equally valid for an upstream endpoint to use the URI from the downstream device’s Contact header in sequential requests, once it has received it.
+
+![](https://kb.smartvox.co.uk/wp-content/uploads/Contact-header-simple-upstream.jpg)
+
+When might we expect to see an endpoint send a request upstream as shown above? An obvious example is a BYE request. If the called party hangs up first, a BYE request would be sent upstream to the caller’s device to tell it that call has ended. The Contact header supplied during the call setup phase tells the called device how to address the calling device in such a situation.
+
+It is important to note that the Contact header defines a URI, not just an IP address and port. It is usual for the calling device to expect the Request-URI (R-URI) in an upstream request to use the same <username> element that it wrote in the original Contact header URI. However, many devices will be tolerant and accept a request where the domain of the URI has changed. This is important because it allows intermediate proxies to fix the Contact address when the UAC device is behind NAT (discussed in detail here). The Contact header may also include parameters and you would expect these to be copied to the R-URI on an upstream request. Here is an example of a Contact header from a device behind NAT which also includes two parameters:
+
+```
+Contact: "John Quick" <sip:1005@192.168.0.81:2048;line=n01ly175;transport=tcp>
+```
+
+### Introducing the Record-Route header
+The above diagrams and example illustrate the core principles using a highly simplified case, but unfortunately it doesn’t bear much resemblance to the real world because, other than LAN-based extensions on a PBX, it is quite unusual for two endpoints to communicate directly with each other. To make it more realistic, we need to at least include a Proxy server or SBC in the communication path between the calling and the called devices.
+
+The standard solution used by SIP Proxy servers involves adding another header, a Record-Route header, to identify itself as an intermediate node.
+
+![](https://kb.smartvox.co.uk/wp-content/uploads/Contact-header-with-Proxy-downstream.jpg)
+
+Record-Route headers are reborn as Route headers when a request is sent upstream. More on this later, but first I must point out a pertinent side-issue before moving on. It is that the SIP standards describe two different techniques that Record-Route headers (and their counter-part Route headers) can use:
+
+1. strict routing
+2. loose routing
+
+Within my blog posts/wiki articles, including this one, I only discuss loose routing. If you want to know about strict routing, please find information from other online resources. I’m sure a Google search will find plenty of material on this topic. So please just accept that in all my wiki articles, loose routing is assumed. Now, let’s get back to the main topic of this post.
+
+### How Record-Route headers are used
+At this point, I am going to deliberately increase the complexity of the situation because it helps to illustrate how Record-Route headers operate in practice. What happens when there is more than one Proxy server?
+
+![](https://kb.smartvox.co.uk/wp-content/uploads/Proxy-Chain-and-RR-headers_1.jpg)
+
+Each Proxy in the chain adds a new Record-Route header containing its own address. It always adds it above any existing RR headers – the order is important. In the example above, when the SIP request arrives at the UAS, it contains three RR headers. The whole set of RR headers describes the path through all intermediate nodes. Combined with the Contact header, this provides a complete description of the upstream path that leads back to the calling device.
+
+The UAS has a complete description of the path back to the UAC, but at this point the UAC doesn’t have any knowledge of the path, the intermediate nodes or even the address of the UAS. It needs to know the path too, for example when it wants to send more requests to the UAS within the current dialogue. So how can this information be exchanged? The answer is fairly simple – the UAS includes a complete copy of all the Record-Route headers in its response. It also includes its own Contact header in the response. The path that the response follows is defined by the Via headers – the RR headers are present in the response but do not influence its transmission path.
+
+![](https://kb.smartvox.co.uk/wp-content/uploads/Proxy-Chain-and-RR-headers_2.jpg)
+
+
+So now, both the UAC and the UAS have a copy of the full set of Record-Route headers. This is essential for loose routing to work and it happens at the start of the dialogue. Here is an edited example of a real-world SIP INVITE request containing two Record-Route headers:
+
+```
+INVITE sip:1009@92.153.251.246:5060 SIP/2.0
+Record-Route: <sip:82.0.128.19:5060;lr>
+Record-Route: <sip:89.200.14.123:5060;lr;MPXON=Y>
+Via: SIP/2.0/UDP 82.0.128.19:5060;branch=z9hG4bKf01e.56789d1.0
+Via: SIP/2.0/UDP 89.200.14.123:5060;branch=z9hG4bKf01e.f9f91e21.0
+Via: SIP/2.0/UDP 192.168.24.12:5144;received=86.4.139.77;branch=z9hG4bK161987113;rport=4454
+From: “John Quick” <sip:1001@svr2.smartvox.co.uk:5061>;tag=2014274981
+To: <sip:1009@svr2.smartvox.co.uk:5060>
+Call-ID: 115377082-5144-3@BJC.BGI.A.BC
+CSeq: 21 INVITE
+Contact: “John Quick” <sip:1001@86.4.139.77:4454>
+```
+
+Note how the Record-Route headers all include the parameter “lr”. This is very important – it shows that loose routing is to be used. One of the RR headers also has a custom parameter “MPXON=Y” which was used to show that a media proxy was active. You would expect to see exactly the same two Record-Route headers in the “200 OK” response when the call is answered.
+
+Once the “Route Set” has been established, it is remembered by both end points. Once the dialogue is established, the proxies should not insert any more Record-Route headers after that initial transaction. Instead, all the sequential SIP requests should contain Route headers.
+
+### Introducing Route headers
+In a sequential request, the Route Set is used to create a set of Route headers. The sequence of these headers is important – the upstream server will invert the order, but a downstream server does not. The next diagram is a representation of a downstream sequential SIP request using loose routing:
+
+![](https://kb.smartvox.co.uk/wp-content/uploads/Proxy-Chain-and-Route-headers_1.jpg)
+
+…and this is the equivalent diagram for an upstream request:
+
+![](https://kb.smartvox.co.uk/wp-content/uploads/Proxy-Chain-and-Route-headers_2.jpg)
+
+A quick explanation of the loose routing mechanism
+The path for the request is determined by the embedded Route headers. When they receive a loose routed request, the intermediate nodes (Proxies) should find their own address in the topmost Route header. It is their responsibility to then strip off this topmost Route header and check if there are any more. If there are more Route headers, the next one is then used to determine the address of the next node in the path. This process is repeated until the last-but-one node is reached. At this point, all Route headers have been used and the final hop uses the Request-URI for routing.
+
+### Some variations you may encounter
+#### Double RR headers
+When a Proxy receives a request on one network interface and sends it onwards using a different interface (e.g. WAN to LAN), this will normally require the addition of an extra Record-Route header. i.e. the Proxy must add two RR headers where you might normally expect it to add one. The same happens when a Proxy transcodes from one transport protocol to another – for example, if it receives a WebRTC request and forwards it as TCP. In cases where it adds two Record-Route headers, it should also add a parameter “;r2=on”. Here is an example:
+
+```
+Record-Route: sip:192.168.10.11:5060;transport=tcp;lr;r2=on;did2=09c.7ab64763>
+Record-Route: sip:86.4.139.77:5060;transport=tcp;lr;r2=on>
+
+RFC 5658 is the official specification document for using double RR headers in these special situations.
+```
+
+### Topology Hiding
+The TOPOLOGY_HIDING module of OpenSIPS, when used, will not use Record-Route and Route headers in the way explained here. Instead, it stores information about upstream and downstream paths in memory and inserts a unique key value into the Contact header that it uses later to recover the required information from memory.
+
+### The “received” parameter
+In some situations, you may see a “received” parameter in a Route header. It is used to specify an address that is different to the main address defined in the header. This format may sometimes be used if loose routing is being used to reach a device behind NAT where the Contact URI for the device gives one IP address but the network connection requires the use of a different address – e.g. the Contact URI uses a LAN address and the only way to reach it is through a public IP address on the external port of a NAT router.
+
+### The “alias” parameter, connection re-use and RFC 5923
+When the connection to a SIP proxy is made using TCP or TLS, it is possible that the port shown in a Route header will be ignored because the proxy prefers to re-use a pre-existing connection. This behaviour is somewhat tricky to explain in detail and I would refer you to RFC 5923 if you want to understand it. Strictly it should only happen if the “alias” parameter was present in the Via received in an earlier request, but OpenSIPS also has a core function, force_tcp_alias(), that will trigger the same behaviour even if the “alias” parameter was not present.
+
+### Implementation in OpenSIPS
+To handle loose routing in OpenSIPS, you must have the TM and RR modules loaded. The RR module provides functions for adding Record-Route headers to an initial request and another function to deal with Route headers in a received sequential request.
+
+OpenSIPS defines a core property for SIP requests called “the destination”. In xlog statements you can print its value using $du. It is distinct from the Request-URI (printed using $ru) and, if present, it takes precedence in determining where a request is relayed when the t_relay() function is called. If no destination is set, the request will be routed according to the R-URI.
+
+The loose-route() function detects if Route headers are present, strips off the topmost header (or the topmost two if “r2=on” is detected), then looks to see if there are any more Route headers. If it finds at least one, the network address defined in the new topmost header is assigned to “the destination” ($du). Your script must still use t_relay() to send the request onwards. The following flow chart (which is highly simplified) shows how a typical OpenSIPS script might process requests using the functions mentioned above:
+
+![](https://kb.smartvox.co.uk/wp-content/uploads/Sequence-for-RR-LR-functions-without-NAT.jpg)
+
+
 
 # Kamailio Introduction
 Kamailio (formerly OpenSER) is an open source SIP server, but Kamailio is a bit difficult to grasp what “it is“, but once you understand it’s all very logical.
