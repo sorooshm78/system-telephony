@@ -3967,6 +3967,273 @@ ethtool -C eth0 adaptive-rx on
 This command enables adaptive RX interrupt coalescing on the NIC, allowing it to automatically adjust the coalescing parameters as needed.
 
 
+### rx-flow-hash
+```
+ethtool -N ens1f0np0 rx-flow-hash udp4 sd
+       rx-flow-hash tcp4|udp4|ah4|esp4|sctp4|tcp6|udp6|ah6|esp6|sctp6
+       m|v|t|s|d|f|n|r...
+              Configures the hash options for the specified flow
+              type.
+
+              m   Hash on the Layer 2 destination address of the rx packet.
+              v   Hash on the VLAN tag of the rx packet.
+              t   Hash on the Layer 3 protocol field of the rx packet.
+              s   Hash on the IP source address of the rx packet.
+              d   Hash on the IP destination address of the rx packet.
+              f   Hash on bytes 0 and 1 of the Layer 4 header of the rx packet.
+              n   Hash on bytes 2 and 3 of the Layer 4 header of the rx packet.
+              r   Discard all packets of this flow type. When this option is
+                  set, all other options are ignored
+```
+
+The `rx-flow-hash` option in `ethtool` is used to configure the Receive Flow Hash setting for a network interface. This setting determines how the NIC (Network Interface Card) distributes incoming packets across multiple receive queues when receive-side scaling (RSS) is enabled. RSS is a technology that allows for the distribution of network processing across multiple CPU cores to improve performance and throughput, particularly in high-speed network environments.
+
+### Understanding RX Flow Hash
+
+**Receive Flow Hash** is a method used to determine which receive queue an incoming packet should be placed into. This decision is based on certain fields in the packet headers, such as source and destination IP addresses, ports, and protocols. The hashing algorithm uses these fields to compute a hash value, which is then used to assign the packet to one of the available receive queues.
+
+### Fields Used for Hashing
+
+Common fields that might be used in the hash calculation include:
+- Source IP address
+- Destination IP address
+- Source port
+- Destination port
+- Protocol type
+
+### Configuring `rx-flow-hash` with `ethtool`
+
+You can use `ethtool` to get and set the RX flow hash configuration. The syntax typically looks like this:
+
+```sh
+ethtool -n [interface]
+ethtool -N [interface] rx-flow-hash tcp4 sdfn
+```
+
+- `ethtool -n [interface]`: Displays the current RX flow hash configuration for the specified network interface.
+- `ethtool -N [interface] rx-flow-hash [parameters]`: Sets the RX flow hash configuration for the specified network interface.
+
+### Example
+
+Here's an example of how you might configure `rx-flow-hash`:
+
+```sh
+ethtool -N eth0 rx-flow-hash tcp4 sdfn
+```
+
+In this command:
+- `eth0` is the name of the network interface.
+- `tcp4` indicates that the configuration applies to IPv4 TCP traffic.
+- `sdfn` is a string where each letter represents a different field to be used in the hash calculation:
+  - `s` stands for source IP address.
+  - `d` stands for destination IP address.
+  - `f` stands for source port.
+  - `n` stands for destination port.
+
+You can use different combinations of these fields based on your specific requirements.
+
+### Practical Usage
+
+#### Displaying Current RX Flow Hash Settings
+
+To see the current RX flow hash configuration, you can use:
+
+```sh
+ethtool -n eth0
+```
+
+This will display the current settings for how packets are hashed and distributed across receive queues.
+
+#### Setting RX Flow Hash Settings
+
+To set the RX flow hash configuration, you might use:
+
+```sh
+ethtool -N eth0 rx-flow-hash udp4 sdfn
+```
+
+In this command:
+- `udp4` indicates that the configuration applies to IPv4 UDP traffic.
+- `sdfn` specifies that the hash calculation will use the source IP, destination IP, source port, and destination port fields.
+
+### Benefits of Configuring RX Flow Hash
+
+1. **Improved Performance:** By distributing incoming packets more evenly across multiple receive queues and CPU cores, the system can handle higher network throughput and reduce the risk of a single core becoming a bottleneck.
+2. **Better Load Balancing:** Properly configured RX flow hash settings ensure that network processing is evenly distributed, which can lead to more consistent performance under load.
+3. **Enhanced Scalability:** For systems with multiple CPU cores and high-speed network interfaces, configuring RX flow hash helps to fully utilize the available hardware resources.
+
+### Conclusion
+
+Configuring `rx-flow-hash` with `ethtool` allows you to fine-tune how your network interface distributes incoming packets across multiple receive queues
+
+
+### Type of rx-flow-hash
+The `rx-flow-hash` parameter in `ethtool` is used to configure how a network interface card (NIC) distributes incoming packets across multiple receive queues. This distribution helps to balance the load among multiple CPU cores and improve network performance. The `rx-flow-hash` types specify which fields of the packet headers are used to compute the hash value for this distribution.
+
+Here are the common types of `rx-flow-hash` you might encounter:
+
+### Common Types of RX Flow Hash
+
+1. **IPV4 (ip4)**
+   - `src`: Source IP address
+   - `dst`: Destination IP address
+
+2. **TCP over IPV4 (tcp4)**
+   - `src`: Source IP address
+   - `dst`: Destination IP address
+   - `src-port`: Source port
+   - `dst-port`: Destination port
+
+3. **UDP over IPV4 (udp4)**
+   - `src`: Source IP address
+   - `dst`: Destination IP address
+   - `src-port`: Source port
+   - `dst-port`: Destination port
+
+4. **SCTP over IPV4 (sctp4)**
+   - `src`: Source IP address
+   - `dst`: Destination IP address
+   - `src-port`: Source port
+   - `dst-port`: Destination port
+
+5. **IPV6 (ip6)**
+   - `src`: Source IP address
+   - `dst`: Destination IP address
+
+6. **TCP over IPV6 (tcp6)**
+   - `src`: Source IP address
+   - `dst`: Destination IP address
+   - `src-port`: Source port
+   - `dst-port`: Destination port
+
+7. **UDP over IPV6 (udp6)**
+   - `src`: Source IP address
+   - `dst`: Destination IP address
+   - `src-port`: Source port
+   - `dst-port`: Destination port
+
+8. **SCTP over IPV6 (sctp6)**
+   - `src`: Source IP address
+   - `dst`: Destination IP address
+   - `src-port`: Source port
+   - `dst-port`: Destination port
+
+### Example Configuration
+
+When configuring `rx-flow-hash` using `ethtool`, you specify the protocol and the fields to be used in the hash computation. For example:
+
+```sh
+ethtool -N eth0 rx-flow-hash tcp4 sdfn
+```
+
+In this command:
+- `eth0` is the network interface.
+- `tcp4` specifies the protocol (TCP over IPV4).
+- `sdfn` is the combination of fields to use for the hash:
+  - `s`: Source IP address
+  - `d`: Destination IP address
+  - `f`: Source port
+  - `n`: Destination port
+
+### Detailed Explanation of Each Field
+
+1. **Source IP Address (`s`):** The IP address of the sender. Including this in the hash helps to distinguish traffic from different sources.
+2. **Destination IP Address (`d`):** The IP address of the receiver. Including this helps to distinguish traffic destined for different addresses.
+3. **Source Port (`f`):** The port number on the sender's side. This is especially useful for differentiating between multiple connections from the same source IP.
+4. **Destination Port (`n`):** The port number on the receiver's side. This helps to distinguish different services (e.g., HTTP, HTTPS) running on the same destination IP.
+
+### Practical Uses and Benefits
+
+- **Load Balancing:** By using a combination of IP addresses and port numbers, you can ensure a more even distribution of packets across receive queues and CPU cores.
+- **Scalability:** Proper configuration allows the system to handle higher network loads efficiently.
+- **Performance:** Reduces bottlenecks by spreading the network processing workload, leading to better utilization of hardware resources.
+
+### Conclusion
+
+Configuring `rx-flow-hash` correctly can significantly enhance the performance and scalability of your network by ensuring an efficient distribution of incoming packets across multiple receive queues and CPU cores. This is particularly important in high-speed networking environments where optimal resource utilization is crucial.
+
+### field of rx-flow-hash
+The `rx-flow-hash` parameter in `ethtool` specifies how incoming packets are distributed across multiple receive queues by defining the fields used to compute a hash value. These fields are extracted from packet headers and used to generate a hash that determines the receive queue to which a packet will be assigned. This distribution helps to balance the load among multiple CPU cores, improving network performance.
+
+Here's an explanation of the fields you can use in `rx-flow-hash`:
+
+### Common Fields of RX Flow Hash
+
+1. **Source IP Address (`s`):**
+   - The IP address of the sender.
+   - Used to distinguish traffic coming from different source IPs.
+   - Applicable to both IPv4 (`ip4`, `tcp4`, `udp4`, `sctp4`) and IPv6 (`ip6`, `tcp6`, `udp6`, `sctp6`) protocols.
+
+2. **Destination IP Address (`d`):**
+   - The IP address of the receiver.
+   - Used to distinguish traffic going to different destination IPs.
+   - Applicable to both IPv4 (`ip4`, `tcp4`, `udp4`, `sctp4`) and IPv6 (`ip6`, `tcp6`, `udp6`, `sctp6`) protocols.
+
+3. **Source Port (`f`):**
+   - The port number on the sender's side.
+   - Helps differentiate between multiple connections from the same source IP.
+   - Applicable to transport layer protocols like TCP (`tcp4`, `tcp6`), UDP (`udp4`, `udp6`), and SCTP (`sctp4`, `sctp6`).
+
+4. **Destination Port (`n`):**
+   - The port number on the receiver's side.
+   - Helps distinguish different services (e.g., HTTP, HTTPS) running on the same destination IP.
+   - Applicable to transport layer protocols like TCP (`tcp4`, `tcp6`), UDP (`udp4`, `udp6`), and SCTP (`sctp4`, `sctp6`).
+
+5. **IP Protocol (`i`):**
+   - The protocol number from the IP header.
+   - Used to differentiate traffic based on the protocol type (e.g., TCP, UDP).
+   - Typically used in IPv4 and IPv6 configurations.
+
+6. **VLAN Tag (`v`):**
+   - The VLAN tag associated with the packet.
+   - Helps differentiate traffic belonging to different VLANs.
+   - Applicable in networks using VLANs for segmentation.
+
+7. **Flow Label (`l`):**
+   - The flow label field in the IPv6 header.
+   - Used to identify specific flows in IPv6 traffic.
+   - Applicable only to IPv6 configurations.
+
+### Example Configurations
+
+When configuring `rx-flow-hash` using `ethtool`, you can specify the protocol and the fields to be used in the hash computation. Here are some examples:
+
+#### Example 1: TCP over IPv4 with Source and Destination IP and Ports
+
+```sh
+ethtool -N eth0 rx-flow-hash tcp4 sdfn
+```
+
+- `eth0` is the network interface.
+- `tcp4` specifies the protocol (TCP over IPv4).
+- `sdfn` indicates that the hash should be computed using:
+  - `s`: Source IP address
+  - `d`: Destination IP address
+  - `f`: Source port
+  - `n`: Destination port
+
+#### Example 2: IPv6 with Source and Destination IP
+
+```sh
+ethtool -N eth0 rx-flow-hash ip6 sd
+```
+
+- `eth0` is the network interface.
+- `ip6` specifies the protocol (IPv6).
+- `sd` indicates that the hash should be computed using:
+  - `s`: Source IP address
+  - `d`: Destination IP address
+
+### Practical Considerations
+
+- **Load Balancing:** Proper configuration ensures an even distribution of packets, preventing any single queue or CPU core from becoming a bottleneck.
+- **Scalability:** Helps in scaling network performance by utilizing multiple cores efficiently.
+- **Performance:** Reduces latency and increases throughput by optimizing packet processing.
+
+### Conclusion
+
+Understanding and configuring `rx-flow-hash` fields is crucial for optimizing network performance, especially in high-speed networking environments. By selecting appropriate fields based on your network traffic patterns and requirements, you can ensure efficient load balancing and better utilization of hardware resources.
+
 ### Ofload
 ### Link
 * [NIC Offloads](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/6/html/performance_tuning_guide/network-nic-offloads#network-nic-offloads)
