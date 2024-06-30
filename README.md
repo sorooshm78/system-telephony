@@ -4500,8 +4500,11 @@ Trivial File Transfer Protocol (TFTP) is a simple, lockstep, and lightweight fil
 Error Handling: If an error occurs, an error message (ERROR) is sent to the client or server, terminating the transfer.
 
 ### Domain Name Service (DNS)
+The Domain Name System (DNS) is a hierarchical and decentralized naming system used to translate human-readable domain names into machine-readable IP addresses. This process is essential for the functioning of the internet, as it allows users to access websites and services using easy-to-remember domain names instead of numerical IP addresses.
 
 ### Network Time Protocol (NTP)
+Network Time Protocol (NTP) is a networking protocol designed to synchronize the clocks of computers and devices over a network. It is one of the oldest internet protocols still in use and ensures that systems across different locations maintain accurate time, which is critical for various applications such as logging events, security, and scheduling tasks.
+
 
 
 ## Power over Ethernet
