@@ -4480,6 +4480,24 @@ Dynamic Host Configuration Protocol, is a network protocol used to automate the 
 
 
 ### Trivial File Transfer Protocol (TFTP)
+Trivial File Transfer Protocol (TFTP) is a simple, lockstep, and lightweight file transfer protocol that operates over UDP (User Datagram Protocol). Unlike more complex protocols like FTP (File Transfer Protocol), TFTP provides a minimalistic way of transferring files, primarily used for simple and quick file transfers.
+
+#### Key Features of TFTP
+* Simplicity: TFTP is designed to be simple and easy to implement, lacking many of the features and commands found in more complex file transfer protocols.
+
+* Connectionless: TFTP uses UDP for data transmission, which means it does not establish a connection before transferring data. This makes TFTP faster but less reliable than TCP-based protocols.
+
+* Minimal Overhead: TFTP has minimal command structure and control overhead, making it suitable for environments where simplicity and low resource usage are crucial.
+
+#### How TFTP Works
+* Read Request (RRQ): A client sends a read request to the TFTP server to retrieve a file.
+
+* Write Request (WRQ): A client sends a write request to the TFTP server to upload a file.
+
+* Data Transfer: Data is transferred in blocks, typically 512 bytes each. Each block of data must be acknowledged by the receiver before the next block is sent.
+
+* Acknowledgment (ACK): The receiving side sends an acknowledgment for each data block received.
+Error Handling: If an error occurs, an error message (ERROR) is sent to the client or server, terminating the transfer.
 
 ### Domain Name Service (DNS)
 
