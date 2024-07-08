@@ -4467,6 +4467,59 @@ Typical Usage: Includes filtering messages, following live logs, and decoding ti
 Practical Applications: Useful for diagnosing hardware issues, driver problems, network troubles, and more.
 Understanding and utilizing dmesg effectively can be crucial for system administrators and anyone involved in maintaining Linux systems. It provides a wealth of information directly from the kernel, making it an invaluable tool for troubleshooting and system analysis
 
+The `ulimit -n` command in Unix-based systems, such as Linux, is used to display or set the maximum number of open file descriptors a process can have. This limit is important for applications that open many files or network connections simultaneously, such as web servers and database servers.
+
+### Usage
+
+- **Display current limit:**
+  ```sh
+  ulimit -n
+  ```
+  This command will print the current limit of open file descriptors for the shell session.
+
+- **Set a new limit:**
+  ```sh
+  ulimit -n <new_limit>
+  ```
+  For example, to set the limit to 4096:
+  ```sh
+  ulimit -n 4096
+  ```
+
+### Types of Limits
+
+- **Soft limit:** The value that the kernel enforces for the corresponding resource. This limit can be increased by a non-privileged user up to the hard limit.
+- **Hard limit:** The ceiling for the soft limit. This limit can only be increased by the superuser (root).
+
+### Example
+
+To display the current limit:
+```sh
+ulimit -n
+```
+
+To set the limit to 4096:
+```sh
+ulimit -n 4096
+```
+
+### Persistent Changes
+
+To make the changes persistent across reboots, you need to modify configuration files such as `/etc/security/limits.conf` or other relevant system-specific files.
+
+For example, you can add the following lines to `/etc/security/limits.conf`:
+```
+*               soft    nofile          4096
+*               hard    nofile          8192
+```
+
+Then, apply the changes by logging out and logging back in, or by restarting the system.
+
+Understanding and properly configuring `ulimit -n` is crucial for ensuring that applications running on your system have the necessary resources to handle the required number of open files and connections.
+
+
+
+
 # Voice Over IP
 ## Chapter 1
 ## Introduction 
