@@ -5027,7 +5027,104 @@ SET MCIPADD 192.168.16.1
 
 
 ## E164 number format
-???
+The E.164 format is an international telephone numbering plan used to ensure that phone numbers are globally unique and standardized. It defines how to format and dial phone numbers internationally. Here’s a simple explanation with an example:
+
+### Key Features of E.164:
+1. **Country Code:** A number that represents the country (1-3 digits).
+2. **National Destination Code (NDC):** This includes area codes or service provider codes (optional, 1-4 digits).
+3. **Subscriber Number:** The actual phone number of the person or service (up to 12 digits).
+
+### Example Breakdown:
+Let's take a phone number from the United States: **+1 234-567-8901**
+
+1. **Country Code (+1):** The country code for the United States is "1".
+2. **National Destination Code (234):** This could be an area code.
+3. **Subscriber Number (567-8901):** The local phone number.
+
+### Formatting Rules:
+- Always starts with a plus sign (+).
+- Followed by the country code.
+- Then the NDC (if applicable).
+- Finally, the subscriber number.
+
+### Examples in E.164 Format:
+- United States: `+12345678901`
+  - Country code: 1
+  - NDC: 234
+  - Subscriber number: 5678901
+- United Kingdom: `+442071838750`
+  - Country code: 44
+  - NDC: 2071
+  - Subscriber number: 838750
+- India: `+919876543210`
+  - Country code: 91
+  - NDC: 98
+  - Subscriber number: 76543210
+
+### Why Use E.164?
+- **Consistency:** Ensures a standardized way of formatting numbers globally.
+- **Interoperability:** Facilitates smooth international communication.
+- **Clarity:** Removes ambiguity when dialing internationally.
+
+### How to Dial:
+1. **From your country:** Dial the international access code (often 00 or +) followed by the E.164 formatted number.
+2. **Within the same country:** Dial as usual, often omitting the country code.
+
+For example, to call the UK number `+442071838750` from the US:
+- Dial `011` (US international access code), followed by `44` (UK country code), and then `2071838750` (local number). So, dial `011442071838750`.
+
+Using the E.164 format ensures that everyone around the world understands and dials the number correctly.
+
+
+Sure! Let's break down these telecom concepts in very simple terms with examples.
+
+### Area Codes
+**Area Codes** are the first few digits of a phone number that designate a specific geographic region. They help route calls to the right area.
+
+- **Example:** In the phone number (415) 555-1234, "415" is the area code. It tells you that the call is going to San Francisco, California.
+
+### Local Exchange
+**Local Exchange** refers to a specific central office or switching system that connects calls within a local area.
+
+- **Example:** For the number (415) 555-1234, "555" could be the local exchange code. This means it routes the call within a smaller area of San Francisco.
+
+### Local Access and Transport Areas (LATAs)
+**Local Access and Transport Areas (LATAs)** are regions that define where a phone company can provide local or long-distance services.
+
+- **Example:** California might be divided into several LATAs. A call within a LATA is usually considered local, while a call between LATAs might be considered long-distance.
+
+### Local Exchange Carriers (LECs)
+**Local Exchange Carriers (LECs)** are companies that provide local telephone service. There are two types:
+
+1. **Incumbent Local Exchange Carriers (ILECs):** These are the traditional phone companies that existed before the market was opened to competition.
+
+   - **Example:** AT&T and Verizon are ILECs in many parts of the United States.
+
+2. **Competitive Local Exchange Carriers (CLECs):** These are newer companies that compete with the incumbent carriers to offer local telephone service.
+
+   - **Example:** Comcast and Vonage are CLECs offering local phone services in various regions.
+
+### Inter-Exchange Carriers (IXCs)
+**Inter-Exchange Carriers (IXCs)** are companies that provide long-distance telephone services between different LATAs or regions.
+
+- **Example:** If you're in San Francisco (LATA 1) and you call someone in Los Angeles (LATA 2), the call might be handled by an IXC like Sprint or AT&T Long Distance.
+
+### Putting It All Together
+1. **Area Code:** Helps identify the region (e.g., 415 for San Francisco).
+2. **Local Exchange:** Routes calls within the local area (e.g., 555).
+3. **LATAs:** Defines the geographic region for local vs. long-distance (e.g., San Francisco and Los Angeles are different LATAs).
+4. **LECs:** Provide local phone service.
+   - **ILECs:** Traditional providers (e.g., AT&T).
+   - **CLECs:** New competitors (e.g., Comcast).
+5. **IXCs:** Handle long-distance calls between LATAs (e.g., Sprint).
+
+### Example Phone Call:
+- **You** (in San Francisco, CA, area code 415) call your friend in Los Angeles, CA, area code 213.
+- **Area Code 415** tells the network you're in San Francisco.
+- **Local Exchange 555** directs the call within your area.
+- **LATA** identifies whether it's a local or long-distance call.
+- **LEC** (like AT&T) connects your call locally.
+- **IXC** (like Sprint) may handle the long-distance part of the call from San Francisco to Los Angeles.
 
 
 ## **کمیسیون ارتباطات فدرال (FCC)**
