@@ -5596,3 +5596,31 @@ Additionally, RFC 3261 indicates that other supporting protocols (such as MEGACO
 ???
 ```
 
+# Components
+When reading about SIP, it is helpful to understand a couple of SIP-specific terms. The following components are the most common.
+
+## User Agent (UA)
+Logical portion that initiates or responds to SIP transactions. The UA can be a client or server and is stateful, so it maintains the session.
+
+بخش منطقی که تراکنش‌های SIP را آغاز یا به آن‌ها پاسخ می‌دهد. UA می‌تواند یک کلاینت یا سرور باشد و حالت‌مند است، بنابراین جلسه را حفظ می‌کند.
+
+## User Agent Client (UAC)
+Initiates requests and accepts responses. Typically, it is the SIP phone initiating the call.
+
+## User Agent Server (UAS)
+Accepts requests and sends back responses.
+
+![](./image/3-1.png)
+
+## پراکسی
+یک مؤلفه واسط که درخواست‌ها را از UAC به UAS یا یک پراکسی دیگر فوروارد می‌کند. این کار عمدتاً برای مسیریابی انجام می‌شود، اما می‌تواند سیاست‌هایی مانند احراز هویت را اعمال کند. یک نمونه از استقرار استاندارد، پراکسی وب است. کلاینت‌ها درخواست‌های وب را به پراکسی ارسال می‌کنند و پراکسی درخواست‌ها را به سرورهای وب ارسال می‌کند. بنابراین، کلاینت‌ها هرگز مستقیماً با سرور وب ارتباط برقرار نمی‌کنند.
+
+## سرور هدایت‌کننده
+درخواست‌ها را از UAC به مجموعه‌ای دیگر از شناسه‌های منبع یکنواخت (URIs) ارسال می‌کند.
+
+## سرور ثبت‌کننده
+UAS که پیام‌های REGISTER را قبول می‌کند و مکان را به‌روزرسانی می‌کند.
+
+این توپولوژی اکنون شامل عامل‌های SIP سمت کلاینت و سرور است. در حال حاضر برچسبی برای سایر مؤلفه‌ها ندارد زیرا یک سیستم تلفنی ایزوله است که به خارج تماس نمی‌گیرد.
+
+![](./image/3-2.png)
