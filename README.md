@@ -53,6 +53,11 @@
             * [Managing Failure](#managing-failure)
         * [Ctl Module](#ctl-module)
             * [Params](#params-ctl)
+        * [xHTTP_PROM Module](#prom-module)
+            * [Overview](#overview-prom)
+            * [Params](#params-prom)
+            * [Functions](#funcs-prom)
+        
 * [sipp](#sipp)     
 * [Linux](#linux)     
 * [Voice over IP](#voice-over-ip)       
@@ -681,6 +686,20 @@ t_relay is transactional relay function. By transactional it means Kamailio reme
 
 ### exit();
 Exit bails out so we won’t keep processing after that, it doesn’t just bail out of our current conditional but stops processing this request further. Without it we’d still go on and send the 501 Not Implemented reply.
+
+### $shv(name) - Shared memory variables
+$shv(name) - it is a class of pseudo-variables stored in shared memory. The value of $shv(name) is visible across all Kamailio processes. Each “shv” has single value and it is initialised to integer 0. You can use “shvset” parameter of pv module to initialize the shared variable. The module exports a set of RPC functions to get/set the value of shared variables.
+
+Example - shv(name) pseudo-variable usage:
+```
+...
+modparam("pv", "shvset", "debug=i:1")
+...
+if ($shv(debug) == 1) {
+	xlog("request: $rm from $fu to $ru\n");
+}
+...
+```
 
 ## **SIP Basics**:
    - SIP is a protocol used for initiating, maintaining, modifying, and terminating real-time communication sessions over IP networks. It's widely used for voice and video calls, instant messaging, and other multimedia applications.
@@ -3079,6 +3098,57 @@ modparam("ctl", "binrpc", "tcp:localhost:8000")
 ```
 kamcmd -s tcp:<IP>:8000 <Kamcmd_Command>
 ```
+
+# prom module
+## overview prom
+This module generates suitable metrics for a Prometheus monitoring platform.
+
+It answers Prometheus pull requests (HTTP requests to /metrics URL).
+
+The module generates metrics based on Kamailio statistics, and also the user can create his own metrics (currently counters, gauges and histograms).
+
+The xHTTP_PROM module uses the xHTTP module to handle HTTP requests. Read the documentation of the xHTTP module for more details.
+
+NOTE: This module is based on xHTTP_RPC one.
+
+IMPORTANT: This module uses private memory to generate HTTP responses, and shared memory to store all the metrics. Remember to increase size of private and shared memory if you use a huge amount of metrics.
+
+Prometheus URLs:
+
+https://prometheus.io/
+https://prometheus.io/docs/concepts/data_model/#metric-names-and-labels
+https://prometheus.io/docs/instrumenting/exposition_formats/
+
+## params prom
+xhttp_prom_stats (str)
+Specifies which internal statistics from Kamailio to show. Possible values:
+
+* all - Show whole Kamailio statistics
+* group_name: - Show all statistics for a group
+* statistic_name - Show a specific statistic. It automatically finds the group.
+
+Default value is "", meaning do not display any Kamailio statistics.
+
+IMPORTANT: Kamailio internal statistics are parsed to convert - into _, so they accomplish with Prometheus guidelines for metric names. https://prometheus.io/docs/concepts/data_model/#metric-names-and-labels User generated statistics and label names are not parsed.
+
+Example Set xhttp_prom_stats parameter
+```
+...
+# show all kamailio statistics.
+modparam("xhttp_prom", "xhttp_prom_stats", "all")
+
+# show statistics for sl group.
+modparam("xhttp_prom", "xhttp_prom_stats", "sl:")
+
+# Show statistic for 200_replies in sl group.
+modparam("xhttp_prom", "xhttp_prom_stats", "200_replies")
+
+# Do not display internal Kamailio statistics. This is the default option.
+modparam("xhttp_prom", "xhttp_prom_stats", "")
+...
+```
+
+## funcs prom
 
 # sipp
 ## Main features
