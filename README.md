@@ -3148,7 +3148,233 @@ modparam("xhttp_prom", "xhttp_prom_stats", "")
 ...
 ```
 
+## prom_counter (str)
+Create a counter metric.
+
+This function declares a counter but the actual counter is only created when using it (by adding to or resetting it)
+
+It takes a list of attribute=value separated by semicolon, the attributes can be name and label.
+
+* name - name of the counter. This attribute is mandatory. It is used to generate the metric name. Each name is unique, no metric shall repeat a name.
+* label - names of labels in the counter. Optional. Only one label parameter at most allowed in counters. Each label name is separated by : without spaces. At most only three label names allowed in each label parameter.
+
+Example 1.7. prom_counter label example
+```
+# Create two labels called method and handler
+label = method:handler
+This would generate  {method="whatever", handler="whatever2"} when building
+the metric.
+```
+
+Example 1.8. Set prom_counter parameter
+```
+...
+
+# Create cnt_first counter with no labels.
+modparam("xhttp_prom", "prom_counter", "name=cnt_first;");
+
+# Create cnt_second counter with no labels.
+modparam("xhttp_prom", "prom_counter", "name=cnt_second;");
+
+
+# Create cnt_third counter with label method
+modparam("xhttp_prom", "prom_counter", "name=cnt_third; label=method");
+
+These lines declare the counter but the actual metric will be created when
+using it by prom_counter_inc or prom_counter_reset functions.
+
+...
+```
+
+## prom_gauge (str)
+Create a gauge metric.
+
+This function declares the gauge but the actual gauge is only created when using it (by setting or resetting it)
+
+It takes a list of attribute=value separated by semicolon, the attributes can be name and value.
+
+* name - name of the gauge. This attribute is mandatory. It is used to generate the metric name. Each name is unique, no metric shall repeat a name.
+* label - names of labels in the gauge. Optional. Only one label parameter at most allowed in gauges. Each label name is separated by : without spaces. At most only three label names allowed inside each label parameter.
+
+Example 1.9. prom_gauge label example
+```
+# Create two labels called method and handler
+label = method:handler
+This would generate  {method="whatever", handler="whatever2"} when building
+the metric.
+```
+Example 1.10. Set prom_gauge parameter
+```
+...
+
+# Create gg_first gauge with no labels
+modparam("xhttp_prom", "prom_gauge", "name=gg_first;");
+
+# Create gg_second gauge with no labels
+modparam("xhttp_prom", "prom_gauge", "name=gg_second;");
+
+
+# Create gg_third gauge with two labels method and handler:
+modparam("xhttp_prom", "prom_gauge", "name=gg_third; label=method:handler;");
+
+...
+```
+## prom_histogram (str)
+Create a histogram metric.
+
+This function declares a histogram but the actual histogram is only created when observing it.
+
+It takes a list of attribute=value separated by semicolon, the attributes can be name, label and buckets.
+
+* name - name of the histogram. This attribute is mandatory. It is used to generate the metric name. Each name is unique, no metric shall repeat a name.
+* label - names of labels in the histogram. Optional. Only one label parameter at most allowed in histograms. Each label name is separated by : without spaces. At most only three label names allowed in each label parameter.
+
+Example 1.11. prom_histogram label example
+```
+# Create two labels called method and handler
+label = method:handler
+This would generate  {method="whatever", handler="whatever2"} when building
+the metric.
+```
+
+* buckets - specifies upper bounds for buckets in the histogram. This attribute is optional.
+Bucket values are separated by ":". Each value has to be a number.
+"+Inf" upper bucket is always automatically included.
+At least one bucket value is needed (other than +Inf).
+Every bucket value has to increase in the list.
+If no buckets specified, default bucket list is set to these values:
+```
+[0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+```
+
+Example 1.12. Set prom_histogram parameter
+```
+...
+
+# Create my_histo histogram with no labels and default buckets.
+modparam("xhttp_prom", "prom_histogram", "name=my_histo;");
+
+# Create second_histo histogram with one label and default buckets.
+# modparam("xhttp_prom", "prom_histogram", "name=second_histo; label=my_lbl");
+
+# Create a histogram with no labels and buckets 3.1, 5, 6.5
+modparam("xhttp_prom", "prom_histogram", "name=histo_third; buckets=3.1:5:6.5");
+
+# Create a histogram with a label and buckets 3.1, 5, 6.5
+modparam("xhttp_prom", "prom_histogram", "name=histo_fourth; label=lbl; buckets=3.1:5:6.5");
+
+These lines declare the histogram but the actual metric will be created when
+using it by prom_histogram_observe function.
+
+...
+```
+
 ## funcs prom
+### prom_counter_reset(name, l0, l1, l2)
+Get a counter based on its name and labels and reset its value to 0. Name parameter is mandatory. Values of labels are optional (from none up to three). Name in prom_counter_reset has to match same name in prom_counter parameter. Number of labels in prom_counter_reset has to match number of labels in prom_counter parameter. First time a counter is used with this reset function the counter is created if it does not exist already.
+
+This function accepts pseudovariables on its parameters.
+
+Available via KEMI framework as counter_reset_l0, counter_reset_l1, counter_reset_l2 and counter_reset_l3.
+
+Example 1.13. prom_counter_reset usage
+```
+...
+# Definition of counter with prom_counter with labels method and IP
+modparam("xhttp_prom", "prom_counter", "name=cnt01; label=method:IP;");
+...
+# Reset cnt01 counter with two values "push" and "192.168.0.1" in labels to zero.
+# First time we execute this function the counter will be created.
+prom_counter_reset("cnt01", "push", "192.168.0.1");
+...
+# A metric like this will appear when listing this counter:
+kamailio_cnt01 {method="push", IP="192.168.0.1"} 0 1234567890
+```
+
+### prom_gauge_reset(name, l0, l1, l2)
+Get a gauge based on its name and labels and reset its value to 0. Name parameter is mandatory. Values of labels are optional (from none up to three). Name in prom_gauge_reset has to match same name in prom_gauge parameter. Number of labels in prom_gauge_reset has to match number of labels in prom_gauge parameter. First time a gauge is used with this reset function the gauge is created if it does not exist already.
+
+This function accepts pseudovariables on its parameters.
+
+Available via KEMI framework as gauge_reset_l0, gauge_reset_l1, gauge_reset_l2 and gauge_reset_l3.
+
+Example 1.14. prom_gauge_reset usage
+```
+...
+# Definition of gauge with prom_gauge with labels method and IP
+modparam("xhttp_prom", "prom_gauge", "name=cnt01; label=method:IP;");
+...
+# Reset cnt01 gauge with two values "push" and "192.168.0.1" in labels to zero.
+# First time we execute this function the gauge will be created.
+prom_gauge_reset("cnt01", "push", "192.168.0.1");
+...
+# A metric like this will appear when listing this gauge:
+kamailio_cnt01 {method="push", IP="192.168.0.1"} 0 1234567890
+...
+```
+
+### prom_counter_inc(name, number, l0, l1, l2)
+Get a counter identified by its name and labels and increase its value by a number. If counter does not exist it creates the counter, initializes it to zero and adds the number.
+
+Name is mandatory, number is mandatory. Number has to be positive or zero (integer). l0, l1, l2 are values of labels and are optional.
+
+name value and number of labels have to match a previous counter definition with prom_counter.
+
+This function accepts pseudovariables on its parameters.
+
+Available via KEMI framework as counter_inc_l0, counter_inc_l1, counter_inc_l2 and counter_inc_l3.
+
+Example 1.15. prom_counter_inc usage
+```
+...
+# Definition of cnt01 counter with no labels.
+modparam("xhttp_prom", "prom_counter", "name=cnt01;");
+...
+# Add 10 to value of cnt01 counter (with no labels) If counter does not exist it gets created.
+prom_counter_inc("cnt01", "10");
+...
+
+# Definition of cnt02 counter with two labels method and IP
+modparam("xhttp_prom", "prom_counter", "name=cnt02; label=method:IP;");
+...
+# Add 15 to value of cnt02 counter with labels method and IP. It creates the counter if it does not exist.
+prom_counter_inc("cnt02", "15", "push", "192.168.0.1");
+# When listed the metric it will show a line like this:
+kamailio_cnt02 {method="push", IP="192.168.0.1"} 15 1234567890
+...
+```
+
+### prom_gauge_set(name, number, l0, l1, l2)
+Get a gauge identified by its name and labels and set its value to a number. If gauge does not exist it creates the gauge and assigns the value to it.
+
+Name is mandatory, number is mandatory. Number is a string that will be parsed as a float. l0, l1, l2 are values of labels and are optional.
+
+name value and number of labels have to match a previous gauge definition with prom_gauge.
+
+This function accepts pseudovariables on its parameters.
+
+Available via KEMI framework as gauge_set_l0, gauge_set_l1, gauge_set_l2 and gauge_set_l3.
+
+Example 1.16. prom_gauge_set usage
+```
+...
+# Definition of gg01 gauge with no labels.
+modparam("xhttp_prom", "prom_gauge", "name=gg01;");
+...
+# Assign -12.5 to value of gg01 gauge (with no labels) If gauge does not exist it gets created
+prom_gauge_set("gg01", "-12.5");
+...
+
+# Definition of gg02 gauge with two labels method and IP
+modparam("xhttp_prom", "prom_gauge", "name=gg02; label=method:IP;");
+...
+# Assign 2.8 to value of gg02 gauge with labels method and IP. It creates the gauge if it does not exist.
+prom_gauge_set("gg02", "2.8", "push", "192.168.0.1");
+# When listed the metric it will show a line like this:
+kamailio_gg02 {method="push", IP="192.168.0.1"} 2.8 1234567890
+...
+```
+
 
 # sipp
 ## Main features
