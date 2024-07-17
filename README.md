@@ -3375,6 +3375,143 @@ kamailio_gg02 {method="push", IP="192.168.0.1"} 2.8 1234567890
 ...
 ```
 
+### prom_histogram_observe(name, number, l0, l1, l2)
+Get a histogram identified by its name and labels and observe a value in it. If histogram does not exist it creates the histogram and accumulate the value in its buckets, counter and sum.
+
+Name is mandatory, number is mandatory. Number is a string that will be parsed as a float. l0, l1, l2 are values of labels and are optional.
+
+name value and number of labels have to match a previous histogram definition with prom_histogram.
+
+This function accepts pseudovariables on its parameters.
+
+Available via KEMI framework as histogram_observe_l0, histogram_observe_l1, histogram_observe_l2 and histogram_observe_l3.
+
+Example 1.17. prom_histogram_observe usage
+```
+...
+# Definition of hist01 histogram with no labels and default buckets.
+modparam("xhttp_prom", "prom_histogram", "name=hist01;");
+...
+# Observe -12.5 value in hist01 histogram (with no labels). If histogram does not exist it gets created:
+prom_histogram_observe("hist01", "-12.5");
+...
+
+# Definition of hist02 histogram with two labels method and IP and buckets [2.3, 5.8, +Inf]:
+modparam("xhttp_prom", "prom_histogram", "name=hist02; label=method:IP; buckets=2.3:5.8");
+...
+# Observe 2.8 value in hist02 histogram with labels method and IP.
+# It creates the histogram if it does not exist.
+prom_histogram_observe("hist02", "2.8", "push", "192.168.0.1");
+# When listed the metric it will show lines like this:
+hist02_bucket{method="push", IP="192.168.0.1", le="2.300000"} 0 1592574659768
+hist02_bucket{method="push", IP="192.168.0.1", le="5.800000"} 1 1592574659768
+hist02_bucket{method="push", IP="192.168.0.1", le="+Inf"} 1 1592574659768
+hist02_sum{method="push", IP="192.168.0.1"} 2.800000 1592574659768
+hist02_count{method="push", IP="192.168.0.1"} 1 1592574659768
+
+...
+```
+
+### prom_dispatch()
+Handle the HTTP request and generate a response.
+
+Available via KEMI framework as xhttp_prom.dispatch
+
+Example 1.18. prom_dispatch usage
+```
+...
+# Needed to use SIP frames as HTTP ones.
+tcp_accept_no_cl=yes
+...
+# xhttp module depends on sl one.
+loadmodule "sl.so"
+loadmodule "xhttp.so"
+loadmodule "xhttp_prom.so"
+...
+# show all kamailio statistics.
+modparam("xhttp_prom", "xhttp_prom_stats", "all")
+...
+event_route[xhttp:request] {
+	$var(xhttp_prom_root) = $(hu{s.substr,0,8});
+	if ($var(xhttp_prom_root) == "/metrics")
+		prom_dispatch();
+	else
+		xhttp_reply("200", "OK", "text/html",
+        		"<html><body>Wrong URL $hu</body></html>");
+}
+...
+```
+Example 1.19. prom_dispatch usage (more complete)
+
+Another example with counters and gauge:
+```
+...
+# Needed to use SIP frames as HTTP ones.
+tcp_accept_no_cl=yes
+
+# xhttp module depends on sl one.
+loadmodule "sl.so"
+loadmodule "xhttp.so"
+loadmodule "xhttp_prom.so"
+
+# show Kamailio statistics for sl group
+modparam("xhttp_prom", "xhttp_prom_stats", "sl:")
+
+# Define two counters and a gauge
+modparam("xhttp_prom", "prom_counter", "name=cnt_first;");
+modparam("xhttp_prom", "prom_counter", "name=cnt_second; label=method:IP");
+modparam("xhttp_prom", "prom_gauge", "name=gg_first; label=handler");
+
+event_route[xhttp:request] {
+	$var(xhttp_prom_root) = $(hu{s.substr,0,8});
+	if ($var(xhttp_prom_root) == "/metrics") {
+	    prom_counter_reset("cnt_first");
+		prom_counter_inc("cnt_second", "10", "push", "192.168.0.1");
+		prom_gauge_set("gg_first", "5.2", "my_handler");
+		prom_dispatch();
+	} else
+		xhttp_reply("200", "OK", "text/html",
+        		"<html><body>Wrong URL $hu</body></html>");
+}
+...
+
+We can manually check the result with a web browser:
+We assume Kamailio runs in localhost and port is set to default (same as SIP: 5060)
+http://localhost:5060
+...
+
+# User defined metrics
+kamailio_cnt_first 0 1554839325427
+kamailio_cnt_second {method="push", IP="192.168.0.1"} 10 1554839325427
+kamailio_gg_first{handler="my_handler"} 5.2 1554839325427
+
+# Kamailio internal statistics
+kamailio_sl_1xx_replies 0 1554839325427
+kamailio_sl_200_replies 15 1554839325427
+kamailio_sl_202_replies 0 1554839325427
+kamailio_sl_2xx_replies 0 1554839325427
+kamailio_sl_300_replies 0 1554839325427
+kamailio_sl_301_replies 0 1554839325427
+kamailio_sl_302_replies 0 1554839325427
+kamailio_sl_3xx_replies 0 1554839325427
+kamailio_sl_400_replies 0 1554839325427
+kamailio_sl_401_replies 0 1554839325427
+kamailio_sl_403_replies 0 1554839325427
+kamailio_sl_404_replies 0 1554839325427
+kamailio_sl_407_replies 0 1554839325427
+kamailio_sl_408_replies 0 1554839325427
+kamailio_sl_483_replies 0 1554839325427
+kamailio_sl_4xx_replies 0 1554839325427
+kamailio_sl_500_replies 0 1554839325427
+kamailio_sl_5xx_replies 0 1554839325427
+kamailio_sl_6xx_replies 0 1554839325427
+kamailio_sl_failures 0 1554839325427
+kamailio_sl_received_ACKs 0 1554839325427
+kamailio_sl_sent_err_replies 0 1554839325427
+kamailio_sl_sent_replies 15 1554839325427
+kamailio_sl_xxx_replies 0 1554839325461
+...
+```
 
 # sipp
 ## Main features
