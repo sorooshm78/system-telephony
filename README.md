@@ -6538,12 +6538,213 @@ By understanding the role of the branch parameter, you can appreciate how SIP ma
 
 Call-ID یک مقداری است که تمام پیام‌ها از یک دیالوگ را با هم گروه‌بندی می‌کند. RFC 3261 بیان می‌کند که تمام درخواست‌ها و پاسخ‌ها در یک دیالوگ باید همان مقدار را داشته باشند. این امر در بسته‌های نشان داده شده در شکل 3-14 نیز صادق است. این فیلد همان نگرانی‌های یکتایی را مانند پارامتر شاخه دارد.
 
-```
-??? tag ???
-??? call ID
+Certainly! The `tag` parameter in the `From` and `To` headers of SIP messages plays an essential role in uniquely identifying and managing SIP dialogs (sessions). Let's break down its purpose, how it works, and see some examples.
+
+### Purpose of the Tag Parameter
+
+1. **Dialog Identification**: The `tag` parameter helps uniquely identify the participants in a SIP dialog. A dialog is a peer-to-peer SIP relationship between two user agents that persists for some time.
+2. **Differentiating Multiple Calls**: It helps differentiate between multiple calls or sessions from the same user agent.
+3. **Matching Responses with Requests**: It aids in correctly matching responses with the original requests, especially when there are multiple dialogs between the same SIP endpoints.
+
+### Where the Tag Appears
+
+- **From Header**: The `tag` in the `From` header is set by the sender of the SIP request.
+- **To Header**: The `tag` in the `To` header is set by the recipient of the SIP request.
+
+### Example Breakdown
+
+#### INVITE Request from User A to User B
+
+1. **Initial INVITE Request**:
+   - User A sends an INVITE request to User B to initiate a call.
+   - The `From` header includes a `tag` parameter to uniquely identify this particular call session from User A's side.
+
+```plaintext
+INVITE sip:userB@example.com SIP/2.0
+Via: SIP/2.0/UDP ua1.example.com;branch=z9hG4bK776asdhds
+Max-Forwards: 70
+To: <sip:userB@example.com>
+From: <sip:userA@example.com>;tag=12345
+Call-ID: a84b4c76e66710@pc33.example.com
+CSeq: 1 INVITE
+Contact: <sip:userA@ua1.example.com>
+Content-Type: application/sdp
+Content-Length: 0
 ```
 
+2. **180 Ringing Response from User B**:
+   - User B receives the INVITE and responds with a 180 Ringing message.
+   - User B adds a `tag` parameter to the `To` header to uniquely identify this call session from User B's side.
 
+```plaintext
+SIP/2.0 180 Ringing
+Via: SIP/2.0/UDP ua1.example.com;branch=z9hG4bK776asdhds
+To: <sip:userB@example.com>;tag=54321
+From: <sip:userA@example.com>;tag=12345
+Call-ID: a84b4c76e66710@pc33.example.com
+CSeq: 1 INVITE
+Contact: <sip:userB@ua2.example.com>
+Content-Length: 0
+```
+
+3. **200 OK Response from User B**:
+   - The 200 OK response confirms the establishment of the call.
+   - It includes the same `tag` parameters in the `To` and `From` headers to maintain dialog consistency.
+
+```plaintext
+SIP/2.0 200 OK
+Via: SIP/2.0/UDP ua1.example.com;branch=z9hG4bK776asdhds
+To: <sip:userB@example.com>;tag=54321
+From: <sip:userA@example.com>;tag=12345
+Call-ID: a84b4c76e66710@pc33.example.com
+CSeq: 1 INVITE
+Contact: <sip:userB@ua2.example.com>
+Content-Type: application/sdp
+Content-Length: 0
+```
+
+4. **ACK from User A**:
+   - User A acknowledges the 200 OK response with an ACK message.
+   - The `ACK` includes the same `tag` parameters to indicate it’s part of the same dialog.
+
+```plaintext
+ACK sip:userB@example.com SIP/2.0
+Via: SIP/2.0/UDP ua1.example.com;branch=z9hG4bK776asdhds
+Max-Forwards: 70
+To: <sip:userB@example.com>;tag=54321
+From: <sip:userA@example.com>;tag=12345
+Call-ID: a84b4c76e66710@pc33.example.com
+CSeq: 1 ACK
+Contact: <sip:userA@ua1.example.com>
+Content-Length: 0
+```
+
+### Why Tags are Important
+
+1. **Uniqueness**: The `tag` parameter helps ensure that each dialog can be uniquely identified. Even if multiple dialogs exist between the same two user agents, the combination of `Call-ID`, `From tag`, and `To tag` ensures uniqueness.
+2. **Transaction Management**: It assists in managing and correlating transactions within a dialog. This is crucial for SIP proxies and user agents to handle multiple ongoing dialogs correctly.
+3. **Robust Communication**: By uniquely identifying each side of the dialog, SIP can maintain robust and accurate communication sessions, reducing the risk of cross-dialog interference or misrouting of messages.
+
+### Real-World Scenarios
+
+#### Scenario 1: Multiple Calls from the Same User Agent
+
+- User A makes two simultaneous calls to User B.
+- Each call will have a different `tag` in the `From` header, ensuring they are treated as separate dialogs.
+
+#### Scenario 2: Call Transfer
+
+- During a call transfer, the new dialog will have its own `tags` to distinguish it from the original dialog.
+
+#### Scenario 3: Forking Proxies
+
+- When a SIP proxy forks a request to multiple endpoints, each endpoint will generate a unique `tag` in the `To` header, allowing the responses to be correctly matched to the original request.
+
+### Conclusion
+
+The `tag` parameter in the `From` and `To` headers of SIP messages is crucial for:
+
+- **Uniquely Identifying SIP Dialogs**: Ensuring each dialog is unique and correctly managed.
+- **Differentiating Multiple Dialogs**: Handling multiple simultaneous sessions between the same user agents.
+- **Ensuring Robust Transaction Management**: Facilitating accurate message routing and response matching.
+
+By understanding the role of `tags`, SIP users and administrators can better manage and troubleshoot SIP-based communications.
+
+The `Call-ID` header in SIP (Session Initiation Protocol) is a globally unique identifier for a particular SIP session. It is used to uniquely identify and track a SIP session across all messages within that session, regardless of the SIP entities involved.
+
+### Purpose of the Call-ID Header
+
+1. **Unique Session Identification**: The `Call-ID` ensures that all messages related to a specific SIP session (like an INVITE, BYE, or ACK) can be correlated and recognized as part of the same session.
+2. **Transaction Management**: Helps SIP proxies, registrars, and user agents to manage and track ongoing transactions and sessions.
+3. **State Maintenance**: Facilitates the maintenance of session state across different SIP messages.
+
+### Structure of Call-ID
+
+The `Call-ID` header is typically a random string generated by the user agent initiating the SIP request. It is globally unique to avoid collisions with other SIP sessions. The format generally looks like this:
+
+```plaintext
+Call-ID: uniqueid@domain
+```
+
+- `uniqueid`: A unique string, often generated randomly or based on a timestamp.
+- `domain`: The domain name of the SIP user agent or server generating the `Call-ID`.
+
+### Example
+
+Let's look at a SIP message example with the `Call-ID` header included:
+
+#### INVITE Request from User A to User B
+
+```plaintext
+INVITE sip:userB@example.com SIP/2.0
+Via: SIP/2.0/UDP ua1.example.com;branch=z9hG4bK776asdhds
+Max-Forwards: 70
+To: <sip:userB@example.com>
+From: <sip:userA@example.com>;tag=12345
+Call-ID: abcd1234@ua1.example.com
+CSeq: 1 INVITE
+Contact: <sip:userA@ua1.example.com>
+Content-Type: application/sdp
+Content-Length: 0
+```
+
+- The `Call-ID` here is `abcd1234@ua1.example.com`.
+
+#### Response from User B
+
+When User B responds to this INVITE, the `Call-ID` in the response will be the same, indicating that the response is part of the same session:
+
+```plaintext
+SIP/2.0 200 OK
+Via: SIP/2.0/UDP ua1.example.com;branch=z9hG4bK776asdhds
+To: <sip:userB@example.com>;tag=54321
+From: <sip:userA@example.com>;tag=12345
+Call-ID: abcd1234@ua1.example.com
+CSeq: 1 INVITE
+Contact: <sip:userB@ua2.example.com>
+Content-Type: application/sdp
+Content-Length: 0
+```
+
+### Why Call-ID is Important
+
+1. **Session Correlation**: All SIP messages (requests and responses) that are part of the same session will have the same `Call-ID`. This allows all parties (including proxies and user agents) to correlate the messages.
+2. **Error Handling**: Helps in debugging and troubleshooting SIP sessions by providing a unique identifier to reference.
+3. **Forking and Merging**: In scenarios where requests are forked to multiple destinations, the `Call-ID` ensures that responses can be correctly merged back into the single session.
+
+### Generating Call-ID
+
+The process of generating a `Call-ID` typically involves:
+
+1. **Randomness**: Including a random or pseudo-random component to ensure uniqueness.
+2. **Domain Information**: Appending the domain or IP address of the originating user agent to further ensure global uniqueness.
+
+#### Example Code to Generate Call-ID (in Python)
+
+```python
+import uuid
+
+def generate_call_id(domain):
+    unique_id = uuid.uuid4()
+    return f"{unique_id}@{domain}"
+
+# Example usage
+domain = "example.com"
+call_id = generate_call_id(domain)
+print(f"Call-ID: {call_id}")
+```
+
+This code snippet generates a unique `Call-ID` by using Python's `uuid` module, which ensures the uniqueness of the identifier.
+
+### Summary
+
+The `Call-ID` header in SIP is a critical element for:
+
+- Uniquely identifying SIP sessions.
+- Managing and correlating transactions.
+- Ensuring proper session tracking across multiple SIP messages.
+
+By maintaining consistency of the `Call-ID` across all messages in a session, SIP entities can effectively manage and troubleshoot communications.
 
 ### To
 
