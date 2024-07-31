@@ -6747,6 +6747,115 @@ The `Call-ID` header in SIP is a critical element for:
 By maintaining consistency of the `Call-ID` across all messages in a session, SIP entities can effectively manage and troubleshoot communications.
 
 ### To
+این (tag) گیرنده‌ی درخواست را مشخص می‌کند و همچنین به فرمت URI می‌باشد. لزوماً نباید نام یا URI گیرنده‌ی نهایی باشد. همچنین به نام نمایشی (display name) نیز مرتبط است.
 
 ### CSeq
+این فیلد مقداری را فراهم می‌کند تا به شناسایی تراکنش‌ها و ترتیب‌بندی آن‌ها کمک کند. از شکل 3-14 می‌توانیم ببینیم که شماره‌های CSeq یکسان هستند. با این حال، بسته بعدی (113) یک تراکنش متفاوت است، بنابراین مقادیر استفاده‌شده برای این بسته تغییر کرده‌اند. شکل 3-15 پیام SIP OPTIONS از سرور تماس به تلفن VoIP را نشان می‌دهد. CSeq نه تنها شامل شماره ترتیب (یک عدد صحیح بدون علامت 32 بیتی کمتر از 2^31) بلکه شامل روش (OPTIONS) نیز می‌باشد.
 
+### What is CSeq in SIP Header?
+
+The `CSeq` (Sequence) header field in SIP (Session Initiation Protocol) is used to identify and order transactions within a SIP session. Each SIP request within a session is assigned a unique sequence number, ensuring that requests and responses can be matched correctly and in order.
+
+### Purpose of CSeq
+
+1. **Order Requests**: Ensures that SIP requests are processed in the correct sequence.
+2. **Match Responses**: Helps match responses to their corresponding requests.
+3. **Handle Retries**: Used to distinguish between new requests and retransmissions of the same request.
+
+### Structure of CSeq
+
+The `CSeq` header consists of two parts:
+- **Sequence Number**: An incrementing integer starting from 1.
+- **Method**: The SIP method (e.g., INVITE, ACK, BYE).
+
+```plaintext
+CSeq: <sequence number> <method>
+```
+
+### Example of CSeq in SIP Messages
+
+#### 1. Initial INVITE Request from User A to User B
+
+User A sends an INVITE request to initiate a call with User B. The `CSeq` header includes the sequence number and the method `INVITE`.
+
+```plaintext
+INVITE sip:userB@example.com SIP/2.0
+Via: SIP/2.0/UDP ua1.example.com;branch=z9hG4bK776asdhds
+Max-Forwards: 70
+To: <sip:userB@example.com>
+From: <sip:userA@example.com>;tag=12345
+Call-ID: a84b4c76e66710@pc33.example.com
+CSeq: 1 INVITE
+Contact: <sip:userA@ua1.example.com>
+Content-Type: application/sdp
+Content-Length: 0
+```
+
+#### 2. 180 Ringing Response from User B
+
+User B receives the INVITE request and responds with a 180 Ringing message. The `CSeq` header in the response matches the `CSeq` in the INVITE request.
+
+```plaintext
+SIP/2.0 180 Ringing
+Via: SIP/2.0/UDP ua1.example.com;branch=z9hG4bK776asdhds
+To: <sip:userB@example.com>;tag=54321
+From: <sip:userA@example.com>;tag=12345
+Call-ID: a84b4c76e66710@pc33.example.com
+CSeq: 1 INVITE
+Content-Length: 0
+```
+
+#### 3. 200 OK Response from User B
+
+User B then responds with a 200 OK message to accept the call. The `CSeq` header matches the original INVITE request.
+
+```plaintext
+SIP/2.0 200 OK
+Via: SIP/2.0/UDP ua1.example.com;branch=z9hG4bK776asdhds
+To: <sip:userB@example.com>;tag=54321
+From: <sip:userA@example.com>;tag=12345
+Call-ID: a84b4c76e66710@pc33.example.com
+CSeq: 1 INVITE
+Content-Type: application/sdp
+Content-Length: 0
+```
+
+#### 4. ACK from User A
+
+User A acknowledges the 200 OK response with an ACK message. The `CSeq` header includes a new method `ACK`, but the same sequence number as the INVITE.
+
+```plaintext
+ACK sip:userB@example.com SIP/2.0
+Via: SIP/2.0/UDP ua1.example.com;branch=z9hG4bK776asdhds
+Max-Forwards: 70
+To: <sip:userB@example.com>;tag=54321
+From: <sip:userA@example.com>;tag=12345
+Call-ID: a84b4c76e66710@pc33.example.com
+CSeq: 1 ACK
+Content-Length: 0
+```
+
+#### 5. BYE Request from User A
+
+When User A wants to end the call, they send a BYE request. The `CSeq` header now has a new sequence number and the method `BYE`.
+
+```plaintext
+BYE sip:userB@example.com SIP/2.0
+Via: SIP/2.0/UDP ua1.example.com;branch=z9hG4bK776asdhds
+Max-Forwards: 70
+To: <sip:userB@example.com>;tag=54321
+From: <sip:userA@example.com>;tag=12345
+Call-ID: a84b4c76e66710@pc33.example.com
+CSeq: 2 BYE
+Content-Length: 0
+```
+
+### Importance of CSeq
+
+1. **Ensures Proper Ordering**: By using sequence numbers, the SIP protocol can ensure that requests are processed in the correct order, avoiding confusion or errors.
+2. **Distinguishes Requests and Retransmissions**: Retransmitted requests use the same sequence number, so they can be identified and handled appropriately.
+3. **Facilitates Dialog Management**: Helps SIP entities manage and maintain the state of a dialog by ensuring that all requests and responses within the dialog are correctly ordered and matched.
+
+### Conclusion
+
+The `CSeq` header in SIP is a critical component for managing the sequence and matching of SIP transactions. By incrementing sequence numbers and specifying the method, SIP can maintain the order of requests and ensure that responses are correctly matched, leading to reliable and orderly communication sessions. Understanding and correctly implementing the `CSeq` header is essential for anyone working with SIP-based communication systems.
