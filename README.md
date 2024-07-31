@@ -6756,6 +6756,10 @@ By maintaining consistency of the `Call-ID` across all messages in a session, SI
 
 The `CSeq` (Sequence) header field in SIP (Session Initiation Protocol) is used to identify and order transactions within a SIP session. Each SIP request within a session is assigned a unique sequence number, ensuring that requests and responses can be matched correctly and in order.
 
+![](./image/3-15.png)
+
+به طور خلاصه زمانی که یک درخواست ارسال میشود (invite, ack, bye) یک cseq ساخته میشود که جواب آن درخواست با همان cseq  ارسال میشود
+
 ### Purpose of CSeq
 
 1. **Order Requests**: Ensures that SIP requests are processed in the correct sequence.
