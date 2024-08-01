@@ -7036,6 +7036,368 @@ a=rtpmap:31 H261/90000
 
 The `o=` line in SDP is essential for identifying the session and the originator. It helps manage session versions and ensures that participants are correctly informed about the session details. This way, devices can properly set up and manage multimedia communications like video calls.
 
+**نام جلسه (ها)**
+این به سادگی یک نام معنادار برای تبادل است. نباید خالی باشد، بنابراین حداقل حاوی کاراکترهای "s=" خواهد بود. کاراکترها باید از ISO 10646 باشند، که مجموعه کاراکتر جهانی را تعریف می‌کند.
+
+In the Session Description Protocol (SDP), the session name is specified by the `s=` line. This line is mandatory in an SDP description and provides a human-readable name for the session. The session name helps participants understand the purpose or nature of the session at a glance.
+
+### Format of the `s=` Line
+
+The `s=` line has a simple format:
+
+```
+s=<session name>
+```
+
+- **<session name>**: A descriptive name for the session. This is a text string that describes what the session is about.
+
+### Example
+
+Let's consider a few examples to illustrate how the `s=` line is used.
+
+#### Example 1: Video Conference
+
+Imagine a company organizing a video conference. The session name could be "Company Video Conference":
+
+```
+v=0
+o=alice 123456 1 IN IP4 203.0.113.1
+s=Company Video Conference
+c=IN IP4 203.0.113.1
+t=0 0
+m=video 49170 RTP/AVP 31
+a=rtpmap:31 H261/90000
+```
+
+Here, `s=Company Video Conference` indicates that the session is for a company video conference.
+
+#### Example 2: Music Streaming Session
+
+For a session intended to stream music, the session name might be "Live Music Streaming":
+
+```
+v=0
+o=bob 789012 1 IN IP4 192.0.2.2
+s=Live Music Streaming
+c=IN IP4 192.0.2.2
+t=0 0
+m=audio 49172 RTP/AVP 0
+a=rtpmap:0 PCMU/8000
+```
+
+Here, `s=Live Music Streaming` indicates that the session is for live music streaming.
+
+### Important Points about the `s=` Line
+
+1. **Mandatory Field**: The `s=` line must always be present in an SDP description. If there is no meaningful name to provide, it should at least contain a single space or a dash (`-`).
+
+2. **Human-Readable**: The session name is intended to be human-readable. It helps participants quickly understand the purpose of the session.
+
+3. **Not Used by Protocol**: The session name is not used by the protocol itself to make decisions. It is purely for informational purposes.
+
+### Complete Example with `s=` Line
+
+Here's a complete example of an SDP message that includes an `s=` line:
+
+```
+v=0
+o=carol 654321 1 IN IP4 198.51.100.1
+s=Team Meeting
+c=IN IP4 198.51.100.1
+t=0 0
+m=audio 49170 RTP/AVP 0
+a=rtpmap:0 PCMU/8000
+m=video 51372 RTP/AVP 31
+a=rtpmap:31 H261/90000
+```
+
+In this example:
+- `v=0`: Version of SDP.
+- `o=carol 654321 1 IN IP4 198.51.100.1`: Originator line.
+- `s=Team Meeting`: The session name indicating this session is for a team meeting.
+- `c=IN IP4 198.51.100.1`: Connection information.
+- `t=0 0`: Time the session is active.
+- `m=audio 49170 RTP/AVP 0`: Audio media description.
+- `a=rtpmap:0 PCMU/8000`: Attribute mapping for audio codec.
+- `m=video 51372 RTP/AVP 31`: Video media description.
+- `a=rtpmap:31 H261/90000`: Attribute mapping for video codec.
+
+### Summary
+
+The `s=` line in an SDP message specifies the session name, providing a human-readable description of the session's purpose. This line is mandatory and helps participants quickly understand the nature of the session.
+
+**اطلاعات اتصال (c)**
+فیلد اطلاعات اتصال باید حضور داشته باشد. مانند مبدأ، از زیر فیلدها تشکیل شده است: نوع شبکه اتصال (IN)، نوع آدرس اتصال (IP4) و آدرس IP اتصال. یک نمونه از شکل 3-18 عبارت است از IN IP4 172.30.1.11.
+
+In the Session Description Protocol (SDP), the `c=` line specifies the connection information for the session. This line provides details about how participants can connect to the session, including the network type, address type, and connection address. This is crucial for multimedia sessions as it tells the participants where to send and receive media streams.
+
+### Format of the `c=` Line
+
+The format of the `c=` line is as follows:
+
+```
+c=<nettype> <addrtype> <connection-address>
+```
+
+Here's a breakdown of each part:
+
+- **<nettype>**: Network type. Typically "IN" for Internet.
+- **<addrtype>**: Address type. Commonly "IP4" for IPv4 addresses or "IP6" for IPv6 addresses.
+- **<connection-address>**: The IP address or network address where the media streams should be sent or received.
+
+### Example of a `c=` Line
+
+Let's go through a few examples to illustrate how the `c=` line is used in SDP.
+
+#### Example 1: Basic IPv4 Address
+
+If the session is using an IPv4 address on the Internet, the `c=` line might look like this:
+
+```
+c=IN IP4 192.0.2.1
+```
+
+- **IN**: The network type is Internet.
+- **IP4**: The address type is IPv4.
+- **192.0.2.1**: The connection address where media should be sent or received.
+
+#### Example 2: IPv6 Address
+
+For a session using an IPv6 address, the `c=` line would be:
+
+```
+c=IN IP6 2001:db8::1
+```
+
+- **IN**: The network type is Internet.
+- **IP6**: The address type is IPv6.
+- **2001:db8::1**: The connection address in IPv6 format.
+
+#### Example 3: Multicast Address
+
+If the session uses multicast, the `c=` line might specify a multicast address:
+
+```
+c=IN IP4 224.2.0.1/127
+```
+
+- **IN**: The network type is Internet.
+- **IP4**: The address type is IPv4.
+- **224.2.0.1/127**: The multicast address and TTL (Time-To-Live) value. The `/127` indicates the TTL for the multicast stream.
+
+### Complete Example SDP Message
+
+Here’s a complete SDP example that includes the `c=` line:
+
+```
+v=0
+o=alice 123456 1 IN IP4 203.0.113.1
+s=Example Session
+c=IN IP4 203.0.113.1
+t=0 0
+m=audio 49170 RTP/AVP 0
+a=rtpmap:0 PCMU/8000
+m=video 51372 RTP/AVP 31
+a=rtpmap:31 H261/90000
+```
+
+In this example:
+- `v=0`: Version of SDP.
+- `o=alice 123456 1 IN IP4 203.0.113.1`: Originator line.
+- `s=Example Session`: Session name.
+- `c=IN IP4 203.0.113.1`: Connection information indicating that the media should be sent to and received from the IPv4 address `203.0.113.1`.
+- `t=0 0`: Time the session is active.
+- `m=audio 49170 RTP/AVP 0`: Audio media description.
+- `a=rtpmap:0 PCMU/8000`: Attribute mapping for audio codec.
+- `m=video 51372 RTP/AVP 31`: Video media description.
+- `a=rtpmap:31 H261/90000`: Attribute mapping for video codec.
+
+### Summary
+
+The `c=` line in SDP specifies the connection information, including the network type, address type, and connection address. This information tells participants where to send and receive the media streams for the session. It is essential for ensuring that multimedia communication can be properly set up and maintained.
+
+**توضیحات زمان**
+این فیلد زمان شروع و پایان برای جلسه رسانه را مشخص می‌کند. مقدار به صورت ثانیه داده می‌شود. این فیلد دارای مقدار شروع و پایان است. مقدار پایان صفر به این معنا است که جلسه محدود نیست، و مقدار شروع صفر به این معنا است که جلسه دائمی در نظر گرفته می‌شود. جلسات نامحدود می‌توانند مشکلات بهره‌برداری ایجاد کنند.
+
+In the Session Description Protocol (SDP), the `t=` line specifies the time description for the session. This line indicates when the session is active and can be used to define the start and end times for the session. 
+
+### Format of the `t=` Line
+
+The `t=` line follows this format:
+
+```
+t=<start-time> <stop-time>
+```
+
+Here's a breakdown of each part:
+
+- **<start-time>**: The start time of the session in seconds since the epoch (1970-01-01 00:00:00 UTC). This is a UNIX timestamp.
+- **<stop-time>**: The end time of the session in seconds since the epoch. If the session is indefinite, this value can be set to `0` or omitted.
+
+### Time Description Examples
+
+#### Example 1: Session with Defined Start and End Times
+
+Let's say a conference call is scheduled to start at `2024-08-01 10:00:00 UTC` and end at `2024-08-01 11:00:00 UTC`. The UNIX timestamps for these times are `1719890400` (start) and `1719894000` (end). The `t=` line would look like this:
+
+```
+t=1719890400 1719894000
+```
+
+#### Example 2: Session with an Indefinite Duration
+
+If the session is intended to be active indefinitely, you can use `0` for the stop time to indicate no end time. For example, if the session starts at `2024-08-01 10:00:00 UTC` (timestamp `1719890400`), the `t=` line would be:
+
+```
+t=1719890400 0
+```
+
+Alternatively, if the `stop-time` field is omitted, it is interpreted as `0` by default, indicating that the session does not have a predefined end time:
+
+```
+t=1719890400 0
+```
+
+#### Example 3: Session with Multiple Time Intervals
+
+A session might have multiple active intervals. In this case, multiple `t=` lines can be included, each describing a different time interval. For example, if a session is active from `2024-08-01 10:00:00 UTC` to `2024-08-01 12:00:00 UTC` and then again from `2024-08-02 14:00:00 UTC` to `2024-08-02 16:00:00 UTC`, you would use:
+
+```
+t=1719890400 1719897600
+t=1719976800 1719984000
+```
+
+### Complete SDP Example with `t=` Line
+
+Here’s a complete SDP example including the `t=` line:
+
+```
+v=0
+o=johndoe 123456 1 IN IP4 192.0.2.1
+s=Project Meeting
+c=IN IP4 192.0.2.1
+t=1719890400 1719894000
+m=audio 49170 RTP/AVP 0
+a=rtpmap:0 PCMU/8000
+m=video 51372 RTP/AVP 31
+a=rtpmap:31 H261/90000
+```
+
+In this example:
+- `v=0`: SDP version.
+- `o=johndoe 123456 1 IN IP4 192.0.2.1`: Originator line.
+- `s=Project Meeting`: Session name.
+- `c=IN IP4 192.0.2.1`: Connection information.
+- `t=1719890400 1719894000`: Time the session is active, from `2024-08-01 10:00:00 UTC` to `2024-08-01 11:00:00 UTC`.
+- `m=audio 49170 RTP/AVP 0`: Audio media description.
+- `a=rtpmap:0 PCMU/8000`: Audio codec information.
+- `m=video 51372 RTP/AVP 31`: Video media description.
+- `a=rtpmap:31 H261/90000`: Video codec information.
+
+### Summary
+
+The `t=` line in SDP specifies the time intervals when the session is active. It can define a start and end time, or indicate an indefinite duration by using `0` as the end time. For sessions with multiple active periods, multiple `t=` lines can be included. This helps ensure that participants are aware of the exact timing for the session's availability.
+
+**توضیحات رسانه**
+این فیلد دقیقاً مشخص می‌کند که چه چیزی در جریان رسانه از نظر پورت‌ها و کدک‌ها استفاده می‌شود. فرم کلی آن m=VALUE است، که VALUE با شماره‌های اختصاص داده شده توسط IANA ثبت شده و معمولاً در RFC ها مستند شده است. در شکل 3-21، توضیحات رسانه‌ای "m=audio 34008 RTP/AVP 0 8 18 2 127" (به همراه CR و LF) قابل خواندن است. هگز در اینجا درج شده تا بتوانیم به طور کامل خط را درک کنیم. به استفاده از علامت مساوی و فاصله‌ها (کاراکتر هگز 20) در خط توجه کنید. علامت دو نقطه در پنجره decode می‌تواند گیج‌کننده باشد؛ این موضوع در نمای خام مانند تغییر خروجی در شکل‌های 3-18 و 3-19 روشن‌تر خواهد شد.
+این خط به ما می‌گوید که جریان صوتی از پورت 34008 در جریان RTP استفاده خواهد کرد. مکانیزم انتقال RTP خواهد بود. از پروفایل‌های A/V RTP (RFC 3551)، شماره‌های 0، 8، 18، 2 و 127 را دریافت می‌کنیم. در یک جلسه رسانه‌ای فقط صوتی مانند این، معمولاً یک کدک تنها استفاده می‌شود. بنابراین، این خط یک کدک تنها را لیست خواهد کرد. جایی که کدک‌های متعدد قابل استفاده و پشتیبانی هستند، ممکن است بیشتر لیست شوند.
+
+In the Session Description Protocol (SDP), the media description is specified using the `m=` line. This line describes the media types and their associated details for a multimedia session, such as audio, video, or data. It indicates how and where media streams are transmitted, including port numbers, transport protocols, and media formats.
+
+### Format of the `m=` Line
+
+The format of the `m=` line is:
+
+```
+m=<media> <port> <proto> <fmt>
+```
+
+Here's a breakdown of each part:
+
+- **<media>**: The type of media being described. Common values include `audio`, `video`, `text`, `application`, etc.
+- **<port>**: The port number on which the media will be transmitted or received.
+- **<proto>**: The transport protocol used for the media. Common values include `RTP/AVP` (RTP with the Audio/Video Profile), `RTP/SAVP` (RTP with Secure Audio/Video Profile), and `UDP` (User Datagram Protocol).
+- **<fmt>**: The format(s) used for the media. These are typically payload types or media formats supported by the codec.
+
+### Example of the `m=` Line
+
+Let's go through a few examples to clarify how the `m=` line is used.
+
+#### Example 1: Audio Media Description
+
+For an audio stream using RTP with the Audio/Video Profile, the `m=` line might look like this:
+
+```
+m=audio 49170 RTP/AVP 0 8 97
+```
+
+- **audio**: The type of media is audio.
+- **49170**: The port number where the audio media will be sent or received.
+- **RTP/AVP**: The transport protocol is RTP with the Audio/Video Profile.
+- **0 8 97**: These are the payload types for different audio codecs. Payload type `0` might represent PCMU, `8` might represent PCMA, and `97` might represent a custom or dynamic codec.
+
+#### Example 2: Video Media Description
+
+For a video stream, the `m=` line might be:
+
+```
+m=video 51372 RTP/AVP 31 32
+```
+
+- **video**: The type of media is video.
+- **51372**: The port number for the video stream.
+- **RTP/AVP**: The transport protocol is RTP with the Audio/Video Profile.
+- **31 32**: Payload types for different video codecs. For example, `31` might represent H.261, and `32` might represent MPV.
+
+#### Example 3: Data Media Description
+
+For a data stream, the `m=` line could look like:
+
+```
+m=application 49180 UDP 96
+```
+
+- **application**: The type of media is application data.
+- **49180**: The port number for the data stream.
+- **UDP**: The transport protocol is UDP.
+- **96**: The payload type for the application data.
+
+### Complete SDP Example
+
+Here’s a complete SDP example including multiple media descriptions:
+
+```
+v=0
+o=johndoe 123456 1 IN IP4 192.0.2.1
+s=Sample Session
+c=IN IP4 192.0.2.1
+t=0 0
+m=audio 49170 RTP/AVP 0 8 96
+a=rtpmap:0 PCMU/8000
+a=rtpmap:8 PCMA/8000
+a=rtpmap:96 opus/48000
+m=video 51372 RTP/AVP 31 32
+a=rtpmap:31 H261/90000
+a=rtpmap:32 MPV/90000
+```
+
+In this example:
+- `v=0`: SDP version.
+- `o=johndoe 123456 1 IN IP4 192.0.2.1`: Originator line.
+- `s=Sample Session`: Session name.
+- `c=IN IP4 192.0.2.1`: Connection information.
+- `t=0 0`: Time description.
+- `m=audio 49170 RTP/AVP 0 8 96`: Audio media description with port `49170` and supported codecs.
+- `a=rtpmap:0 PCMU/8000`: Mapping for payload type `0`.
+- `a=rtpmap:8 PCMA/8000`: Mapping for payload type `8`.
+- `a=rtpmap:96 opus/48000`: Mapping for payload type `96`.
+- `m=video 51372 RTP/AVP 31 32`: Video media description with port `51372` and supported codecs.
+- `a=rtpmap:31 H261/90000`: Mapping for payload type `31`.
+- `a=rtpmap:32 MPV/90000`: Mapping for payload type `32`.
+
+### Summary
+
+The `m=` line in SDP describes the media streams within the session, specifying the type of media (e.g., audio, video), the port number, transport protocol, and the media formats or payload types. This information helps participants understand how to handle the media streams and which formats and codecs are supported.
 
 
 
