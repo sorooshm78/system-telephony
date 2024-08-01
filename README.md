@@ -6863,3 +6863,180 @@ Content-Length: 0
 ### Conclusion
 
 The `CSeq` header in SIP is a critical component for managing the sequence and matching of SIP transactions. By incrementing sequence numbers and specifying the method, SIP can maintain the order of requests and ensure that responses are correctly matched, leading to reliable and orderly communication sessions. Understanding and correctly implementing the `CSeq` header is essential for anyone working with SIP-based communication systems.
+
+
+## **Max-Forwards**
+این مقدار تعداد هاب‌هایی (مرحله‌هایی) که یک پیام می‌تواند در مسیر خود به مقصد طی کند را محدود می‌کند. اگر این فیلد به صفر برسد، پیام تحویل داده نمی‌شود و یک کد خطا (وضعیت) 483 تولید می‌شود. این فیلد در درخواست‌ها استفاده می‌شود و توصیه می‌شود که مقدار آن 70 تنظیم شود. از بررسی بسته‌های تا کنون، می‌توانیم ببینیم که شبکه SIP فعلی قوانین را رعایت می‌کند.
+
+## **Contact**
+این فیلد باید در درخواست حضور داشته باشد. باید یک URI منفرد مطابق با فرمت استفاده شده در بخش‌های قبلی هدر را شامل شود. با بررسی هدر شکل 3-15، می‌توانیم ببینیم که بین فیلدها از نظر ساختار URI سازگاری وجود دارد. "Unknown" به عنوان نام کاربری ذکر شده است، زیرا هیچ کاربری به این شماره تلفن متصل نبوده است؛ فقط یک آدرس IP.
+
+## **Allow**
+این فهرستی از متدهایی است که توسط کاربر ایجادکننده پیام پشتیبانی می‌شود. همانطور که قبلاً ذکر شد، متدها عملکردهایی هستند که توسط UAC یا UAS در SIP انجام می‌شوند. معمولاً پیام OPTIONS برای این منظور استفاده می‌شود. به طور عملی، پیام‌های SIP ممکن است شامل فیلدهای Allow باشند تا تعداد کلی پیام‌های مورد نیاز را کاهش دهند. به عنوان مثال، در تبادل مورد استفاده در اینجا، پیام REGISTER شامل همان فیلدها است. شکل 3-15 نشان می‌دهد که تنوع وسیعی از متدها (و بنابراین پیام‌ها) پشتیبانی می‌شوند.
+
+## Basic Operation Continued
+در این مرحله از توپولوژی ما، تلفن‌های VoIP روشن شده‌اند، با سرور DHCP ارتباط برقرار کرده‌اند، به سرور TFTP متصل شده‌اند و در سرور تماس ثبت‌نام کرده‌اند. این بخش تراکنش‌هایی را که در هنگام برقراری تماس بین دو نقطه انتهایی SIP اتفاق می‌افتد، پوشش می‌دهد. باید به خاطر داشته باشیم که برای تجزیه و تحلیل یک تماس، باید از هر دو طرف بررسی شود. در این مورد، تلفن با آدرس IP 172.30.1.11 (شماره 475-1111) با شماره 475-2222 تماس می‌گیرد که تلفنی با آدرس IP 172.30.1.22 است. این موضوع در شکل 3-16 نشان داده شده است. مانند ثبت‌نام، این پیام‌ها به سرور تماس ارسال و از آن دریافت می‌شوند (شکل 3-17). 
+
+با بررسی این پیام‌ها، می‌توانیم ببینیم که بسته‌ها به سمت سرور تماس ارسال و از آن دریافت می‌شوند. علاوه بر این، تمام مقادیر (برچسب‌ها، CSeq، شاخه) متفاوت هستند، که نشان می‌دهد این پیام‌ها به عنوان گروه‌های مختلفی از پیام‌ها در نظر گرفته می‌شوند. در نهایت، محتوای دایره شده به ما می‌گوید که SDP (پروتکل توصیف جلسه) درون بدنه پیام قرار دارد.
+
+![](./image/3-16.png)
+
+## Session Description Protocol (SDP)
+پروتکل توصیف جلسه (SDP) در RFC 4566 استاندارد شده است که جایگزین RFC 3266 شده است. هدف این پروتکل ارائه یک پروتکل عمومی است که محتوای رسانه‌ای برای انتقال را توصیف می‌کند. در مثال‌هایی که تا کنون استفاده شده‌اند، نوع محتوای رسانه‌ای صدا است. از RFC 4566.
+
+![](./image/3-17.png)
+
+
+در RFC 3261 (SIP) به استفاده از SDP اشاره می‌کند اما آن را تعریف نمی‌کند. اطلاعات مهم درون فیلدهای SDP شامل دلیل جلسه، مدت زمان، نوع رسانه و اطلاعاتی درباره جریان رسانه مانند پورت خواهد بود. شکل 3-18 نگاهی دوباره به همان پیام‌های INVITE دیده شده در شکل 3-17 می‌اندازد، اما این بار سرصفحه‌های پیام را جمع کرده و بخش SDP را گسترش می‌دهد. پورت‌های UDP که در جریان داده صوتی بعدی استفاده خواهند شد، دایره شده‌اند.
+
+![](./image/3-18.png)
+
+در Wireshark گاهی اوقات به بسته‌ها اضافه‌هایی می‌کند تا محتوای یک فیلد را توصیف کند. برخی از این توضیحات مفید هستند و برخی دیگر گیج‌کننده. با SIP، این تفاوت‌ها می‌توانند تأثیری بر درک ما از ساختار پیام SIP بگذارند. به همین دلیل، گاهی اوقات مناسب است که پیام‌ها را در قالب خام مشاهده کنیم. شکل 3-19 همان پیامی را نشان می‌دهد که در نیمه بالایی شکل 3-18 نشان داده شده است. به دلیل محدودیت فضا، فقط یکی از پیام‌ها نشان داده شده است. شکل 3-19 تفاوت مشخص بین این دو را نشان می‌دهد. من علاقه‌مندم بگویم "هرگاه شک داشتی، به بسته‌ها مراجعه کن." شاید باید اضافه کنم "اگر شک همچنان باقی بود، به بسته خام مراجعه کن."
+
+یک سرصفحه SDP ممکن است شامل نه تنها فیلدهای اجباری مانند نسخه، مبدأ و شناسه جلسه باشد، بلکه برخی موارد اختیاری را نیز شامل شود. یکی از موارد مهم، شماره پورت مورد استفاده در جریان رسانه است که در شکل 3-18 دایره شده است. از آنجا که ما در حال بازنویسی RFC نیستیم، این بخش فیلدهایی را که توسط بسته‌های نشان داده شده در شکل‌ها استفاده شده‌اند، پوشش می‌دهد.
+
+**نسخه**
+این نسخه‌ی SDP است. RFC 4566 نسخه 0 است.
+
+**مبدأ (مالک)**
+این فیلد در واقع شامل چندین زیر فیلد است، همان‌طور که در شکل 3-20 نشان داده شده است. در این مورد، فیلدها از پیام INVITE که مستقیماً از تلفن Avaya با آدرس 172.30.1.11 ارسال شده بود، استخراج شدند.
+
+
+![](./image/3-17.png)
+
+در این مورد، نام کاربری وجود نداشت و فقط خود تلفن حضور داشت. شناسه جلسه دایره شده یک جفت از زیر فیلدها است. نسخه توسط نقطه انتهایی ایجاد می‌شود با توصیه‌ای که از فرمت زمان شبکه استفاده شود. نوع شبکه (IN) تقریباً همیشه نشان می‌دهد که این نوعی اینترنت است. نوع آدرس نیز به صورت متنی است. این مقدار معمولاً IP4 یا IP6 خواهد بود. آدرس مالک منبع پیام INVITE است.
+
+
+In the context of the Session Description Protocol (SDP), the term "Originator" (or "owner") refers to the entity that initiates a multimedia session. SDP is a format for describing multimedia communication sessions for the purposes of session announcement, session invitation, and other forms of multimedia session initiation.
+
+### SDP Overview
+
+SDP is primarily used to convey information about media streams in multimedia sessions to help participants agree on a common set of parameters for the session. This includes information such as:
+
+- The type of media (audio, video, etc.)
+- The codec to be used
+- Network information (IP address, port numbers)
+- Timing information for when the session is active
+
+### Originator/Owner in SDP
+
+In an SDP message, the originator (or owner) is described using the `o=` line. This line provides information about the session originator and serves as a unique identifier for the session. Here is a breakdown of the `o=` line format:
+
+#### `o=` Line Format
+
+The format of the `o=` line is as follows:
+
+```
+o=<username> <session-id> <session-version> <nettype> <addrtype> <unicast-address>
+```
+
+- **<username>**: The username of the session originator. In many cases, this might be set to a hyphen ("-") if the originating user is not important for the session identification.
+- **<session-id>**: A numeric identifier for the session that is unique within the context of the originator's username. This ID is used to uniquely identify the session.
+- **<session-version>**: A version number for this session description. This number is increased when the session description is modified.
+- **<nettype>**: The type of network. Commonly, this is "IN" for Internet.
+- **<addrtype>**: The address type. Commonly, this is "IP4" for IPv4 addresses or "IP6" for IPv6 addresses.
+- **<unicast-address>**: The IP address of the machine from which the session was created.
+
+#### Example `o=` Line
+
+Here is an example of an `o=` line in an SDP message:
+
+```
+o=jdoe 2890844526 2890842807 IN IP4 192.168.1.1
+```
+
+Breaking down this example:
+
+- `jdoe`: The username of the session originator (John Doe).
+- `2890844526`: The session ID, which is unique for this user's sessions.
+- `2890842807`: The session version, indicating this is the initial version of the session description.
+- `IN`: The network type, indicating the Internet.
+- `IP4`: The address type, indicating an IPv4 address.
+- `192.168.1.1`: The IP address of the originator's machine.
+
+### Role of the Originator
+
+The originator is essentially the creator of the session description and plays a crucial role in establishing and modifying multimedia sessions. The `o=` line ensures that each session description can be uniquely identified and versioned, which is vital for managing changes and updates to the session parameters.
+
+In summary, the originator (owner) in SDP is denoted by the `o=` line, which provides essential information about the entity that created the session, including a unique identifier and network information. This helps ensure that the session can be correctly identified and managed throughout its lifecycle.
+
+Sure! Let's break down the concept of the originator (owner) in the Session Description Protocol (SDP) with a simpler explanation and a detailed example.
+
+### What is SDP?
+
+The Session Description Protocol (SDP) is used to describe multimedia communication sessions. It's like a blueprint that tells devices how to set up a call or video chat, including details like what type of media (audio, video), codecs, and network information.
+
+### What is the Originator (Owner)?
+
+In SDP, the originator (or owner) is the entity that creates the session description. This information is included in the `o=` line of the SDP message. The `o=` line provides crucial details to uniquely identify the session.
+
+### `o=` Line Format
+
+The `o=` line in SDP has the following format:
+
+```
+o=<username> <session-id> <session-version> <nettype> <addrtype> <unicast-address>
+```
+
+Let's break down each part:
+
+- **<username>**: The name of the person or entity who created the session.
+- **<session-id>**: A unique identifier for this session.
+- **<session-version>**: The version of this session description. This increases if the description changes.
+- **<nettype>**: The type of network (usually "IN" for Internet).
+- **<addrtype>**: The type of address (usually "IP4" for IPv4 or "IP6" for IPv6).
+- **<unicast-address>**: The IP address of the session originator's machine.
+
+### Example
+
+Let's create a simple example to make it clearer.
+
+Imagine you have a user named Alice who wants to start a video call. Her computer's IP address is `203.0.113.1`. She creates a session description, and the `o=` line in her SDP message might look like this:
+
+```
+o=alice 123456 1 IN IP4 203.0.113.1
+```
+
+Here's what each part means:
+
+- **alice**: Alice is the username of the person who created the session.
+- **123456**: This is the unique session ID for this call. It's a number that helps to identify this particular session.
+- **1**: This is the session version. Since this is the first version, it's set to 1. If Alice updates the session, this number will increase.
+- **IN**: This indicates that the session is using the Internet.
+- **IP4**: This specifies that the address type is IPv4.
+- **203.0.113.1**: This is Alice's computer's IP address.
+
+### Why is the `o=` Line Important?
+
+The `o=` line is crucial because it uniquely identifies the session and helps manage any changes. For example, if Alice needs to update the session (maybe she changes the video codec), she would send a new SDP message with the same session ID but a higher session version number.
+
+### A Complete Example SDP Message
+
+Here’s what a more complete SDP message might look like with the `o=` line included:
+
+```
+v=0
+o=alice 123456 1 IN IP4 203.0.113.1
+s=Video Call
+c=IN IP4 203.0.113.1
+t=0 0
+m=video 49170 RTP/AVP 31
+a=rtpmap:31 H261/90000
+```
+
+- `v=0`: Version of SDP.
+- `o=alice 123456 1 IN IP4 203.0.113.1`: Originator line as explained.
+- `s=Video Call`: Session name.
+- `c=IN IP4 203.0.113.1`: Connection information (network type and address).
+- `t=0 0`: Time the session is active (0 means it is always active).
+- `m=video 49170 RTP/AVP 31`: Media description (video on port 49170 using RTP/AVP profile and payload type 31).
+- `a=rtpmap:31 H261/90000`: Attribute line mapping payload type 31 to codec H261 with a clock rate of 90000 Hz.
+
+### Summary
+
+The `o=` line in SDP is essential for identifying the session and the originator. It helps manage session versions and ensures that participants are correctly informed about the session details. This way, devices can properly set up and manage multimedia communications like video calls.
+
+
+
+
+![]()
