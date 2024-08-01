@@ -7447,4 +7447,85 @@ one shown in Figure 3-28.
 
 ![](./image/3-29.png)
 
+پس از دریافت پیام SIP BYE، نقطه انتهایی دریافت‌کننده (شماره 475-1111) پاسخی با کد وضعیت 200 بازمی‌گرداند. به خاطر داشته باشید که پیام SIP BYE در واقع درخواستی برای قطع ارتباط است. پاسخ در شکل 3-30 نشان داده شده است.
 
+![](./image/3-30.png)
+
+قطع یک تماس تنها ارسال پیام BYE نیست. یک جلسه (نه تنها یک ارتباط) بین دو نقطه انتهایی با دریافت پاسخ (کد وضعیت 200) به INVITE برقرار شده است. بنابراین، یک Call-ID با جلسه یا تبادل داده مرتبط است. پیام BYE به یک INVITE و جلسه خاص اشاره دارد. در RFC، ایده قطع تماس برای SIP به‌خوبی تعریف نشده است، هرچند هدف واضح است. اما چون نمی‌دانیم که طرف تماس گیرنده یا دریافت‌کننده تماس دقیقاً چه زمانی تماس را قطع می‌کند، همچنین مطمئن نیستیم که آیا پیام‌های وضعیت یا ACK مناسب دریافت شده‌اند یا خیر. بنابراین، اغلب به عهده توسعه‌دهنده است که اطمینان حاصل کند که UAC با این موارد برخورد می‌کند. امید این است که وقتی کاربر یا دستگاه با گذاشتن گوشی روی پایه یا با کلیک بر روی دکمه‌ای که تماس را قطع می‌کند، تماس را قطع می‌کند، UAC یک درخواست SIP BYE تولید کند که به Call-ID اشاره می‌کند.
+
+با الزام اینکه پیام SIP BYE به یک جلسه خاص اشاره کند، از ارسال دعوت‌نامه‌های اضافی (INVITE) به آن جلسه جلوگیری می‌شود زیرا شناسه‌های Call-ID متفاوت خواهند بود. پیامی که به BYE مرتبط است، پیام CANCEL است، اما استفاده از آن کمی متفاوت است.
+
+### توضیحات بیشتر
+
+1. **پیام BYE و Call-ID**: هر جلسه در پروتکل SIP با یک Call-ID منحصر به فرد مشخص می‌شود. وقتی پیام BYE ارسال می‌شود، باید به این Call-ID خاص اشاره کند. این امر باعث می‌شود که نتوان دعوت‌نامه‌های اضافی (INVITEs) به همان جلسه ارسال کرد زیرا Call-ID آنها متفاوت خواهد بود. به عبارت دیگر، پیام BYE اطمینان می‌دهد که جلسه خاتمه یافته و دیگر نمی‌توان به آن دعوت‌نامه‌ای ارسال کرد.
+
+2. **پیام CANCEL**: پیام CANCEL نیز برای لغو یک درخواست INVITE استفاده می‌شود، اما تفاوت‌هایی با پیام BYE دارد. پیام CANCEL زمانی استفاده می‌شود که تماس هنوز برقرار نشده است و هدف آن لغو فرآیند برقراری تماس است. به عنوان مثال، اگر یک درخواست INVITE ارسال شده و هنوز پاسخی دریافت نشده است، ارسال پیام CANCEL باعث می‌شود که فرآیند برقراری تماس متوقف شود. از سوی دیگر، پیام BYE برای خاتمه یک جلسه فعال استفاده می‌شود.
+
+### خلاصه
+- **پیام BYE**: برای خاتمه یک جلسه خاص که با یک Call-ID منحصر به فرد مشخص شده است استفاده می‌شود. این پیام از ارسال دعوت‌نامه‌های اضافی به همان جلسه جلوگیری می‌کند.
+- **پیام CANCEL**: برای لغو یک درخواست INVITE استفاده می‌شود زمانی که تماس هنوز برقرار نشده است. هدف آن متوقف کردن فرآیند برقراری تماس است.
+
+این تفاوت‌ها به شما کمک می‌کند تا بهتر بفهمید چگونه پیام‌های BYE و CANCEL در پروتکل SIP استفاده می‌شوند و چگونه هر کدام نقش خود را در مدیریت تماس‌ها ایفا می‌کنند.
+
+
+این ما را به پایان مکالمه SIP می‌رساند. اگر این پیام‌ها را بررسی کنید، چه در این فصل یا با استفاده از فایل‌های ضبط شده که در وب‌سایت کتاب قرار داده شده‌اند، باید به یاد داشته باشید که مکالمه را می‌توان با استفاده از تگ‌ها و فیلدهای Call-ID پیگیری کرد. در این مورد، سرور تماس بین دو نقطه انتهایی برای تبادل‌ها قرار دارد، و به طور مؤثری دو مجموعه پیام مختلف را تنظیم می‌کند. این بدان معناست که مقادیر برای دو اتصال متفاوت هستند.
+
+نکته جالب دیگر جریان پیام‌های RTP است. این فصل یکی از دو پیکربندی ممکن برای جریان‌های صوتی را نشان می‌دهد. مسیرها در شکل ۳-۳۱ نشان داده شده‌اند.
+
+این رایج است که سرور تماس دو نقطه انتهایی را متصل کند و سپس از مکالمه کنار برود. در این نقطه، پیام‌های RTP مستقیماً بین تلفن‌ها جریان پیدا می‌کنند، همانطور که در سمت راست نشان داده شده است. بنابراین، بسته‌ها آدرس‌های ۱۷۲.۳۰.۱.۱۱ و ۱۷۲.۳۰.۱.۲۲ را به عنوان آدرس‌های مبدأ و مقصد خواهند داشت. با این حال، با این توپولوژی کوچک و پیکربندی پیش‌فرض AsteriskNOW، سرور تماس برای کل تماس، از ابتدا تا انتها، می‌ماند، همانطور که در سمت چپ نشان داده شده است.
+
+![](./image/3-31.png)
+
+In SIP (Session Initiation Protocol), tags are used to uniquely identify different participants in a session or call. There are two primary tags commonly used in SIP: the **To-tag** and the **From-tag**.
+
+### What are Tags in SIP?
+
+1. **From-tag**: This tag is included in the "From" header field of a SIP message. It uniquely identifies the caller (the sender of the message).
+
+2. **To-tag**: This tag is included in the "To" header field of a SIP message. It uniquely identifies the callee (the receiver of the message).
+
+### Why are Tags Used in SIP?
+
+Tags serve several crucial purposes in SIP communications:
+
+1. **Uniqueness**: Tags help ensure that each SIP dialog (a session between two endpoints) is uniquely identified. This prevents confusion when multiple dialogs are established between the same endpoints. For example, if two users are engaged in multiple calls at the same time, tags help distinguish between these different calls.
+
+2. **Dialog Identification**: A combination of the Call-ID, To-tag, and From-tag uniquely identifies a dialog. This combination allows SIP devices and servers to track and manage the state of each dialog independently.
+
+3. **Handling Forking**: SIP allows forking, where a single SIP request can be sent to multiple destinations, and each destination might generate a response. Tags help in correlating the responses to the correct dialog. For instance, if a SIP INVITE request is forked to multiple recipients, each recipient's response will have a unique To-tag, allowing the initiator to manage each response separately.
+
+4. **State Management**: Tags assist in maintaining the state of a session. When an initial INVITE is sent, the To-tag in the 1xx (provisional) and 2xx (successful) responses ensures that the subsequent requests (like ACK, BYE) are associated with the correct session.
+
+### Example Scenario
+
+Consider a scenario where Alice (the caller) initiates a call to Bob (the callee):
+
+1. **Alice sends an INVITE**:
+   - From: Alice's SIP URI with a From-tag.
+   - To: Bob's SIP URI without a To-tag (initial INVITE).
+
+2. **Bob responds with a 200 OK**:
+   - From: Bob's SIP URI with a To-tag.
+   - To: Alice's SIP URI with Alice's From-tag.
+
+3. **Alice sends an ACK**:
+   - From: Alice's SIP URI with the same From-tag.
+   - To: Bob's SIP URI with Bob's To-tag.
+
+Throughout this call setup, the tags ensure that both Alice and Bob (and any intermediaries) can correctly associate these messages with the ongoing dialog.
+
+In summary, tags in SIP are essential for managing and identifying dialogs uniquely, ensuring proper session handling, especially in scenarios involving forking and multiple concurrent sessions.
+
+In SIP (Session Initiation Protocol), both Call-ID and tags (From-tag and To-tag) are essential components used to uniquely identify and manage SIP sessions. However, they serve different purposes and function at different levels of the protocol's operation. Here is a detailed comparison between Call-ID and tags:
+
+### Call-ID
+- **Definition**: The Call-ID is a globally unique identifier for a SIP call. It is a unique string generated by the user agent (UA) initiating the call and included in all SIP messages within that call.
+- **Scope**: The Call-ID is the same for all messages within the same call or session, regardless of the direction of the message or the endpoints involved.
+- **Usage**: It is used to uniquely identify a particular SIP session across all SIP devices and servers involved in the call. 
+- **Persistence**: The Call-ID remains constant throughout the entire duration of the call, from the initial INVITE message until the call is terminated.
+- **Generation**: Typically, the user agent creates the Call-ID using a combination of random or sequential numbers and possibly some other unique data to ensure global uniqueness.
+
+### Tags
+- **Definition**: Tags are unique identifiers appended to the From and To headers in SIP messages. They help to uniquely identify participants within a session.
+- **Scope**: Tags are specific to the endpoints involved in the session. The From-tag identifies the caller, and the To-tag identifies the callee.
+- **Usage**: Tags are used in combination with the Call-ID to uniquely identify a dialog (a session between two
