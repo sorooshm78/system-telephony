@@ -7669,4 +7669,159 @@ SIP ترانک‌ها به عنوان یک فناوری نوین در ارتبا
 بنابراین، هنگام بررسی بسته‌های RTP، ممکن است انتظار داشته باشیم که هدرها توسط جدیدترین RFC تعریف شده باشند. با این حال، بیشتر انتقال‌ها از RFC 1889 استفاده می‌کنند.
 
 
+In the Session Initiation Protocol (SIP), the `Contact` header field plays a crucial role. It is used to specify the SIP URI (Uniform Resource Identifier) where the user or service can be directly contacted for subsequent requests or sessions. The `Contact` header field is found in various SIP messages, such as `INVITE`, `REGISTER`, `200 OK`, etc., and its role can vary slightly depending on the context in which it's used.
+
+### Key Points of the `Contact` Header
+
+1. **URI for Direct Contact:**
+   - The `Contact` header contains a SIP or SIPS URI that specifies where the user can be reached. For example, in an `INVITE` request, the `Contact` header indicates the address where the caller expects to receive responses.
+
+   Example:
+   ```
+   Contact: <sip:alice@example.com>
+   ```
+
+2. **Use in `REGISTER` Requests:**
+   - In a `REGISTER` request, the `Contact` header specifies the address of record (AOR) that should be associated with the registering user. This tells the SIP registrar where future SIP requests intended for the user should be sent.
+
+   Example:
+   ```
+   REGISTER sip:example.com SIP/2.0
+   Contact: <sip:alice@client.example.com>
+   ```
+
+   This example tells the SIP registrar that requests for `alice@example.com` should be forwarded to `alice@client.example.com`.
+
+3. **Use in `INVITE` Requests:**
+   - When a `Contact` header is present in an `INVITE` request, it identifies the address where the caller wants to receive future requests related to the session, like ACKs or BYEs.
+
+   Example:
+   ```
+   INVITE sip:bob@example.com SIP/2.0
+   Contact: <sip:alice@client.example.com>
+   ```
+
+   This means that Bob's SIP server should send the response to `alice@client.example.com`.
+
+4. **Use in Responses (e.g., `200 OK`):**
+   - In responses, such as `200 OK` to an `INVITE`, the `Contact` header tells the sender of the request where to send subsequent requests (e.g., ACK, BYE) related to that session.
+
+   Example:
+   ```
+   SIP/2.0 200 OK
+   Contact: <sip:bob@server.example.com>
+   ```
+
+   This indicates that subsequent requests for this session should be sent to `bob@server.example.com`.
+
+5. **Expiration of Contact Information:**
+   - The `Contact` header may also include an `expires` parameter that indicates the duration in seconds for which the contact address is valid.
+
+   Example:
+   ```
+   Contact: <sip:alice@client.example.com>;expires=3600
+   ```
+
+   This means the contact information is valid for one hour.
+
+### Example SIP Message with `Contact` Header
+
+Here's a simplified example of a SIP `INVITE` request with a `Contact` header:
+
+```
+INVITE sip:bob@example.com SIP/2.0
+Via: SIP/2.0/UDP client.example.com;branch=z9hG4bK776asdhds
+Max-Forwards: 70
+To: Bob <sip:bob@example.com>
+From: Alice <sip:alice@example.com>;tag=1928301774
+Call-ID: a84b4c76e66710@client.example.com
+CSeq: 314159 INVITE
+Contact: <sip:alice@client.example.com>
+Content-Type: application/sdp
+Content-Length: 142
+
+v=0
+o=alice 2890844526 2890844526 IN IP4 client.example.com
+s=
+c=IN IP4 client.example.com
+t=0 0
+m=audio 49170 RTP/AVP 0
+a=rtpmap:0 PCMU/8000
+```
+
+In this `INVITE` request, the `Contact` header specifies that Alice can be contacted at `sip:alice@client.example.com`.
+
+### Summary
+
+- The `Contact` header in SIP is essential for specifying where future SIP requests related to the session should be sent.
+- It can appear in requests (e.g., `INVITE`, `REGISTER`) and responses (e.g., `200 OK`), serving different purposes depending on the message type.
+- It ensures that subsequent communications within a SIP session are routed to the correct address.
+
+
+Sure! Let's break it down in a simpler way.
+
+### What is SIP?
+
+First, understand that **SIP (Session Initiation Protocol)** is a protocol used for initiating, maintaining, and ending communication sessions like voice calls or video calls over the internet.
+
+### What is the `Contact` Header?
+
+In SIP, the `Contact` header is like a **"return address"** on a letter. It tells the person or device you're communicating with where they can reach you next.
+
+### How is the `Contact` Header Used?
+
+1. **When You Make a Call (INVITE):**
+   - Imagine you're calling someone. When you send the `INVITE` to start the call, you include your "return address" in the `Contact` header. This tells the other person, "Hey, if you need to send something back to me during this call, use this address."
+   - Example:
+     ```
+     Contact: <sip:alice@phone.example.com>
+     ```
+     This means, "Reach me at `alice@phone.example.com` during this call."
+
+2. **When You Register (REGISTER):**
+   - When you turn on your SIP phone or app, it registers with a server to let it know where you can be found. You use the `REGISTER` message, and in the `Contact` header, you provide the address where you want to receive calls.
+   - Example:
+     ```
+     Contact: <sip:alice@home.example.com>
+     ```
+     This tells the server, "Send all my calls to `alice@home.example.com`."
+
+3. **When the Call is Accepted (200 OK):**
+   - When the person you're calling answers, they send a `200 OK` message back. In that message, their `Contact` header tells you where to send further messages related to this call.
+   - Example:
+     ```
+     Contact: <sip:bob@phone.example.com>
+     ```
+     This means, "Now that I've answered, you can reach me at `bob@phone.example.com`."
+
+### Why is the `Contact` Header Important?
+
+- **Routing:** It ensures that all the messages during the call or session go to the correct address, like voice packets or call hang-up signals.
+- **Updating Location:** If you move to a new device or network, the `Contact` header tells everyone else where to find you.
+- **Session Continuity:** Even if your IP address or network changes, the `Contact` header helps maintain the session.
+
+### A Simple Example
+
+Let's say Alice is calling Bob. Here’s how it might look:
+
+1. **Alice sends an `INVITE`:**
+   - **Message:**
+     ```
+     INVITE sip:bob@example.com SIP/2.0
+     Contact: <sip:alice@phone.example.com>
+     ```
+   - **Meaning:** "Hi Bob, I'm Alice. If you want to reach me during this call, use `alice@phone.example.com`."
+
+2. **Bob sends a `200 OK`:**
+   - **Message:**
+     ```
+     SIP/2.0 200 OK
+     Contact: <sip:bob@phone.example.com>
+     ```
+   - **Meaning:** "Hi Alice, I’ve answered. If you want to send me anything during this call, use `bob@phone.example.com`."
+
+### Summary
+
+The `Contact` header in SIP is like giving someone your phone number or email. It tells them where to reach you for that specific call or session, making sure that all communication during that session goes smoothly to the right place.
+
 
