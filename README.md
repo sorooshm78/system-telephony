@@ -7844,3 +7844,81 @@ The `Contact` header in SIP is like giving someone your phone number or email. I
 
 ![](./image/4-3.png)
 ![](./image/4-4.png)
+
+## Header first octet
+اولین اکتت (Octet) از هدر RTP مجموعه‌ای از فیلدهای کوچک است. مقدار باینری 1000 0000 (که در مبنای شانزده برابر با 80 است) به راحتی می‌تواند به این زیرمجموعه‌ها تقسیم شود. خط برجسته شده در شکل 4-5 نشان‌دهنده شروع اولین اکتت است و این در مقدار هگزادسیمال در پایین نمودار منعکس شده است. این بسته خاص فقط قسمتی از بسته‌ای است که در این بخش استفاده کرده‌ایم. این بسته برای کاهش فضای اشغال شده ویرایش شده است، اما محتوای آن تغییر نکرده است. سه نقطه در انتهای بخش رمزگشایی شده (3f4a...) صرفاً نشان می‌دهد که payload بیشتری وجود دارد که بر روی صفحه جا نمی‌شود.
+
+![](./image/4-5.png)
+
+## Subfield Descriptions
+### Version (V)
+This is a 2-bit field indicating the protocol variant. Possible values include:
+* 0 : Pre-RTP; indicates the vat audio tool
+* 1 : First draft version of RTP
+* 2 : Current version of RTP
+
+یک نکته جالب این است که هر دو RFC 1889 و 3550 از عبارت "نسخه تعریف‌شده توسط این مشخصات" استفاده می‌کنند وقتی مقدار این فیلد برابر با دو است. این که هر دو RFC از همان مقدار در این فیلد استفاده می‌کنند، نشان‌دهنده این است که تفاوت زیادی بین آن‌ها وجود ندارد. از شکل 4-5 می‌توانیم ببینیم که مقدار در این فیلد به صورت 10 در مبنای باینری است و Wireshark این را مطابق با RFC 1889 می‌داند.
+
+## Padding (P)
+این فیلد تک‌بیتی به ما می‌گوید که آیا بسته حاوی اکتت‌هایی است که بخشی از محتوای صوتی یا تصویری تشکیل‌دهنده جریان نیستند یا خیر. مقدار صفر نشان می‌دهد که این پدینگ (padding) وجود ندارد. اگر پدینگ بخشی از بسته باشد، آخرین اکتت از پدینگ تعداد اکتت‌های پدینگ را مشخص می‌کند. برخی از پیاده‌سازی‌ها از اندازه بلوک‌های ثابت استفاده می‌کنند که ممکن است توسط نمونه‌ها پر نشوند و به همین دلیل نیاز به پدینگ داشته باشند.
+
+### RTP Header Padding Explained in Simple Terms
+
+**RTP** (Real-time Transport Protocol) is a protocol used for delivering audio and video over networks, like in video calls or streaming. The RTP packet has a header, which is like the packet's "cover page" containing essential information about the data being sent. 
+
+**Padding** in the RTP header is an optional feature that ensures the packet length is a multiple of a specific size, typically for encryption or other alignment purposes.
+
+### Why Use Padding?
+
+1. **Encryption Requirements**: Some encryption methods require the data to be in blocks of a specific size, like 8 or 16 bytes. If the data doesn’t naturally fit, padding is added to fill up the extra space.
+
+2. **Network Requirements**: Sometimes, network protocols or devices work better with data packets of certain sizes, so padding is added to make the packet fit the desired size.
+
+### How Padding Works in RTP
+
+1. **Padding Flag**: The first thing to know is that the RTP header has a **Padding (P) bit**. This is a single bit in the header that, when set to `1`, indicates that padding is present at the end of the RTP packet.
+
+2. **Padding Bytes**: If the padding bit is set, the last byte of the RTP packet specifies how many padding bytes have been added at the end of the packet. These padding bytes are not part of the actual data; they’re just fillers.
+
+### Example 1: Basic RTP Packet without Padding
+
+- **Original Data**: 48 bytes of audio data.
+- **RTP Header**: 12 bytes.
+- **Total Packet Size**: 60 bytes (48 bytes data + 12 bytes header).
+
+In this example, the RTP packet is exactly 60 bytes long, and no padding is needed.
+
+### Example 2: RTP Packet with Padding for Encryption
+
+- **Original Data**: 50 bytes of audio data.
+- **RTP Header**: 12 bytes.
+- **Total Packet Size Without Padding**: 62 bytes.
+
+If encryption requires a block size of 8 bytes:
+- **Next Multiple of 8**: The packet should be 64 bytes.
+- **Padding Needed**: 64 - 62 = 2 bytes.
+
+So, 2 bytes of padding are added. The **Padding bit** in the header is set to `1`, and the last byte of the packet is set to `2`, indicating the amount of padding.
+
+### Example 3: RTP Packet with Padding for Network Alignment
+
+- **Original Data**: 100 bytes of video data.
+- **RTP Header**: 12 bytes.
+- **Total Packet Size Without Padding**: 112 bytes.
+
+If the network prefers packets in multiples of 16 bytes:
+- **Next Multiple of 16**: The packet should be 112 bytes already, so no padding is needed.
+- **Padding Needed**: 0 bytes.
+
+Here, no padding is necessary because the total packet size already aligns with the required multiple.
+
+### Summary
+
+- **Padding** is used to align the RTP packet to specific sizes, often for encryption or network requirements.
+- The **Padding (P) bit** in the RTP header indicates if padding is present.
+- The **last byte** of the packet tells you how many padding bytes are included.
+- Padding is not part of the actual data but helps meet size requirements.
+
+This feature ensures smooth data transmission and proper encryption, making RTP packets more reliable and secure.
+
+![](https://vocal.com/wp-content/uploads/2022/04/RTP-Padding-1024x360.png)
