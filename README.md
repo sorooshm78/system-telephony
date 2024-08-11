@@ -7922,3 +7922,191 @@ Here, no padding is necessary because the total packet size already aligns with 
 This feature ensures smooth data transmission and proper encryption, making RTP packets more reliable and secure.
 
 ![](https://vocal.com/wp-content/uploads/2022/04/RTP-Padding-1024x360.png)
+
+
+## Extension (X)
+این یک بیت واحد دیگر است که وضعیت بسته فعلی را نشان می‌دهد. همانطور که قبلاً ذکر شد، RTP یک پروتکل قابل توسعه است؛ این ویژگی اجازه می‌دهد تا قابلیت‌هایی که پس از RFCهای فعلی تعریف شده‌اند، به راحتی به پروتکل اضافه شوند. در صورت نیاز به یک افزونه، هدر (header) یکبار بزرگتر خواهد شد تا عملکردی که توسط افزونه تعریف شده است را در بر گیرد، که این فرایند به صورت ثابت و مطابق با RFC 3550 انجام می‌شود.
+
+The Real-time Transport Protocol (RTP) is a protocol used for delivering audio and video over IP networks. RTP packets contain various fields in their headers, one of which is the "Extension" (X) field. The extension mechanism allows additional data to be added to the RTP header that isn't defined by the standard RTP header format.
+
+### RTP Header Overview
+
+An RTP packet typically consists of:
+
+1. **RTP Header**: 12 bytes long by default, with optional extensions.
+2. **Payload**: The actual data (e.g., audio, video).
+
+### RTP Header Structure
+
+Here’s the structure of a basic RTP header (without the extension):
+
+- **Version (V)**: 2 bits
+- **Padding (P)**: 1 bit
+- **Extension (X)**: 1 bit (if set to 1, there is an extension header)
+- **CSRC Count (CC)**: 4 bits
+- **Marker (M)**: 1 bit
+- **Payload Type (PT)**: 7 bits
+- **Sequence Number**: 16 bits
+- **Timestamp**: 32 bits
+- **SSRC Identifier**: 32 bits
+- **CSRC List**: 0 to 15 items, each 32 bits (optional, depends on CC value)
+
+### Extension Mechanism (X Bit)
+
+When the **X** bit is set to 1, an RTP header extension is present. The extension header follows the standard header and provides a way to include additional information. 
+
+The extension header is structured as follows:
+
+- **Extension Header**: 
+  - **Profile-specific identifier**: 16 bits (defines the type of the extension)
+  - **Length**: 16 bits (the number of 32-bit words in the extension data)
+  
+- **Extension Data**: The actual data defined by the extension.
+
+### Example of an RTP Packet with Extension (Human-Readable)
+
+Let's break down a simplified, human-readable RTP packet example with an extension:
+
+```
+RTP Packet:
+
+- Version: 2
+- Padding: 0
+- Extension: 1  (indicates the presence of an extension header)
+- CSRC Count: 0
+- Marker: 0
+- Payload Type: 96 (dynamic payload type, often used for video codecs)
+- Sequence Number: 34567
+- Timestamp: 1234567890
+- SSRC: 0xABCDEF01
+
+Extension Header:
+
+- Profile-specific identifier: 0x1001  (custom-defined extension)
+- Length: 2  (extension data is 2 * 32-bit words = 8 bytes)
+
+Extension Data:
+
+- Custom Field 1: 0x12345678
+- Custom Field 2: 0x9ABCDEF0
+
+Payload: (e.g., H.264 video frame data)
+
+```
+
+### Detailed Breakdown
+
+1. **RTP Header**:
+   - **Version (V)**: 2 (standard version of RTP)
+   - **Padding (P)**: 0 (no padding)
+   - **Extension (X)**: 1 (extension header is present)
+   - **CSRC Count (CC)**: 0 (no CSRC identifiers present)
+   - **Marker (M)**: 0 (not the last packet in a frame)
+   - **Payload Type (PT)**: 96 (commonly used for dynamic RTP payloads like video)
+   - **Sequence Number**: 34567 (used for packet ordering)
+   - **Timestamp**: 1234567890 (timestamp for synchronization)
+   - **SSRC**: 0xABCDEF01 (unique identifier for the stream)
+
+2. **Extension Header**:
+   - **Profile-specific identifier**: 0x1001 (indicates the type of extension)
+   - **Length**: 2 (means there are 8 bytes of extension data following)
+
+3. **Extension Data**:
+   - **Custom Field 1**: 0x12345678
+   - **Custom Field 2**: 0x9ABCDEF0
+
+4. **Payload**:
+   - The actual data being transported, such as part of a video frame encoded in H.264.
+
+This example demonstrates how the RTP extension mechanism allows you to include additional custom information in the RTP header, which can be useful for various purposes such as signaling, additional metadata, or other control information.
+
+![](https://blog.jianchihu.net/wp-content/uploads/20201025161941.png)
+![](https://blog.webex.com/wp-content/uploads/2024/06/rtp-packet-format-shown-in-32-bit.png)
+
+## Contributing Source Identifiers Count (CC)
+در RTP قابلیت حمل چندین نمونه را دارد و این نمونه‌ها ممکن است از منابع مختلفی باشند، همان‌طور که در تماس‌های کنفرانسی با چندین شرکت‌کننده اتفاق می‌افتد. برای مدیریت این حالت، RTP باید روشی ارائه دهد تا نمونه‌ها و منبع هر یک از آنها را جدا کند تا جریان‌ها در سمت گیرنده بتوانند بازسازی شوند. اگر مقدار این فیلد ۴ بیتی به صفر تنظیم شود (۰۰۰۰ در باینری)، آنگاه تنها یک منبع به این بسته مرتبط است. اگر مقدار غیر صفر باشد، تعداد منابع دیگر موجود را نشان می‌دهد.
+
+The **Contributing Source (CSRC) Count (CC)** field in the RTP header is a 4-bit field that indicates the number of Contributing Source (CSRC) identifiers included in the RTP header. These CSRC identifiers are used in situations where an RTP packet is generated from multiple sources, such as when audio or video streams from multiple participants are mixed into a single stream.
+
+### RTP Header Structure with CSRC
+
+Here’s how the CSRC Count (CC) field fits into the RTP header:
+
+- **Version (V)**: 2 bits
+- **Padding (P)**: 1 bit
+- **Extension (X)**: 1 bit
+- **CSRC Count (CC)**: 4 bits
+- **Marker (M)**: 1 bit
+- **Payload Type (PT)**: 7 bits
+- **Sequence Number**: 16 bits
+- **Timestamp**: 32 bits
+- **SSRC Identifier**: 32 bits
+- **CSRC List**: 0 to 15 items, each 32 bits (optional, depends on CC value)
+
+### Explanation of CSRC Count (CC) and CSRC List
+
+- **CSRC Count (CC)**: This field indicates how many CSRC identifiers are present in the RTP header. The value can range from 0 to 15, meaning that up to 15 contributing sources can be listed.
+
+- **CSRC List**: The CSRC list immediately follows the SSRC field in the RTP header. Each CSRC identifier is 32 bits long and represents a source that contributed to the payload.
+
+### Example of an RTP Packet with CSRCs
+
+Let’s consider a scenario where multiple audio sources are mixed into a single RTP stream, and we want to include the identifiers for these sources in the RTP header.
+
+```
+RTP Packet:
+
+- Version: 2
+- Padding: 0
+- Extension: 0  (no extension header)
+- CSRC Count: 2  (two contributing sources)
+- Marker: 0
+- Payload Type: 0 (typically for PCMU audio codec)
+- Sequence Number: 4567
+- Timestamp: 987654321
+- SSRC: 0x12345678  (identifier for the RTP stream)
+- CSRC List:
+   - CSRC 1: 0xABCDEFFF  (identifier for the first contributing source)
+   - CSRC 2: 0x98765432  (identifier for the second contributing source)
+
+Payload: (e.g., mixed audio data)
+```
+
+### Detailed Breakdown
+
+1. **RTP Header**:
+   - **Version (V)**: 2 (standard version of RTP)
+   - **Padding (P)**: 0 (no padding)
+   - **Extension (X)**: 0 (no extension header)
+   - **CSRC Count (CC)**: 2 (there are 2 CSRC identifiers in the list)
+   - **Marker (M)**: 0 (not the last packet in a frame)
+   - **Payload Type (PT)**: 0 (e.g., PCMU audio codec)
+   - **Sequence Number**: 4567 (used for packet ordering)
+   - **Timestamp**: 987654321 (timestamp for synchronization)
+   - **SSRC**: 0x12345678 (unique identifier for the stream)
+
+2. **CSRC List**:
+   - **CSRC 1**: 0xABCDEFFF (first contributing source)
+   - **CSRC 2**: 0x98765432 (second contributing source)
+
+3. **Payload**:
+   - The actual mixed audio data, which is contributed by the sources listed in the CSRC list.
+
+### Use Cases for CSRC
+
+The CSRC identifiers are particularly useful in scenarios such as:
+
+- **Audio/Video Conferencing**: When an RTP mixer combines audio from multiple participants into a single stream, the CSRC list can identify each contributing participant.
+- **Media Gateways**: In a network, where media from different sources is combined or passed through a gateway, the CSRC list can help trace the original sources.
+
+By using the CSRC count and list, RTP can carry additional information about the sources contributing to a stream, which can be critical for applications that require understanding the origin of media content within a mixed stream.
+
+
+-----------------
+ 
+* CSRC Count (CC): 4 bits representing the number of CSRCs in the RTP header (0-15).
+
+* Synchronization Source Identifier (SSRC): A 32-bit number that uniquely identifies the source of the packet stream within the session, which can be very necessary when demultiplexing, decrypting, or performing other operations. SSRCs should be generated randomly and each stream sent by a device should use a unique SSRC. Devices can change SSRCs at any time; receivers need to be able to cope (they are meant to send an RTCP BYE, covered in the later RTCP series, but do not always do so). Devices are also meant to change their SSRCs if they see that the far end is using the same SSRC, though not all implementations will do so – how important this is will depend on what SSRCs are being used for.
+
+* Contributing Source Identifier (CSRC): Optionally, up to 15 different 32-bit values (signaled in the CC field) that identify the SSRCs of sources that have contributed to the stream. For instance, a mixed audio stream might use this to identify the SSRCs of the individual audio streams that were included in the mix. Generally only useful if the far end has access to some metadata that includes additional information about those source SSRCs (such as a roster list of participants that include this information).
+
