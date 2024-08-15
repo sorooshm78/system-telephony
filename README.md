@@ -8110,3 +8110,412 @@ By using the CSRC count and list, RTP can carry additional information about the
 
 * Contributing Source Identifier (CSRC): Optionally, up to 15 different 32-bit values (signaled in the CC field) that identify the SSRCs of sources that have contributed to the stream. For instance, a mixed audio stream might use this to identify the SSRCs of the individual audio streams that were included in the mix. Generally only useful if the far end has access to some metadata that includes additional information about those source SSRCs (such as a roster list of participants that include this information).
 
+## Header second octet
+جمله زیر را ترجمه کرده‌ام:
+
+هشت‌تایی بعدی نیز به دو زیرمیدان تقسیم می‌شود: نشانگر و نوع محموله. با کلیک بر روی بیت نشانگر، این هشت‌تایی دوم برای ما مشخص می‌شود. هشت‌تایی دوم از هدر با میدان مشخص شده در شکل 4-6 آغاز می‌شود.
+
+![](./image/4-6.png)
+
+## Marker (M)
+تعریف ساده این فیلد تک‌بیتی این است که نشانگر اجازه می‌دهد رویدادهای مهمی مانند مرز یک فریم مشخص شوند. اما استفاده از یک نشانگر توسط یک پروفایل تعریف می‌شود. RFC 3551 راهنمایی زیر را ارائه می‌دهد:
+
+برای برنامه‌هایی که در طول سکوت یا هیچ بسته‌ای نمی‌فرستند یا گاهی بسته‌های نویز راحتی ارسال می‌کنند، اولین بسته از یک دوره گفتار (talkspurt)، یعنی اولین بسته پس از یک دوره سکوت که در آن بسته‌ها به صورت پیوسته ارسال نشده‌اند، **باید** با تنظیم بیت نشانگر در هدر داده RTP به یک متمایز شود. بیت نشانگر در سایر بسته‌ها صفر است.
+
+همان‌طور که قبلاً بحث شد، همه جنبه‌های پروتکل به یک شکل پیاده‌سازی نمی‌شوند. بنابراین، برخی از فروشندگان ممکن است دلیلی برای جداسازی جریان RTP با تنظیم بیت نشانگر به یک داشته باشند، اما معمولاً این بیت استفاده نمی‌شود و بنابراین روی صفر تنظیم می‌شود. مثال نشان‌داده‌شده در شکل 4-7 از یک توپولوژی سیسکو گرفته شده است. برای بسته‌هایی که مکالمه صوتی نمونه را آغاز می‌کنند، می‌توانیم ببینیم که هر دو "دوره‌های گفتار" بیت نشانگر را تنظیم کرده‌اند.
+
+
+![](./image/4-7.png)
+
+
+The RTP (Real-time Transport Protocol) header contains several fields that are important for the correct delivery and interpretation of real-time data like audio or video streams. One of these fields is the **Marker (M) bit**.
+
+### Marker (M) Bit in RTP Header
+
+**Purpose:**  
+The Marker bit is used to mark significant events in the RTP stream, such as the start of a talkspurt in audio, the first packet of a video frame, or other events that may require special handling by the receiver.
+
+**Position:**  
+The Marker bit is the first bit in the second byte of the RTP header.
+
+**Size:**  
+It is a single bit (1 bit) field in the RTP header.
+
+**Functionality:**
+- **Marker Bit Set to 1 (M=1):** Indicates a significant event. The exact meaning can vary depending on the application, but common uses include:
+  - The start of a new talkspurt in an audio stream (after a period of silence).
+  - The beginning of a new video frame in a video stream.
+  - An important control event, like a synchronization point in the stream.
+  
+- **Marker Bit Set to 0 (M=0):** Indicates that the packet does not represent a significant event. It is part of the continuous stream of data.
+
+### RTP Header Structure (Simplified)
+The RTP header is at least 12 bytes long and has the following structure:
+
+```
+0                   1                   2                   3
+0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|V=2|P|X|  CC   |M|     PT      |       Sequence Number         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                           Timestamp                           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|           Synchronization Source (SSRC) Identifier            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|            Contributing Source (CSRC) Identifiers             | (optional)
+|                              ....                             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+```
+
+### Example Scenario
+
+Let's say we are streaming video using RTP. Each packet carries part of a video frame. The application decides to mark the first packet of each new video frame.
+
+**Example 1: Start of a Video Frame**
+- The first packet of a new frame would have the Marker bit set to 1 (`M=1`).
+- Following packets that are part of the same frame would have the Marker bit set to 0 (`M=0`).
+
+This informs the receiver that the packet with `M=1` is the start of a new video frame, which can be useful for decoding or synchronization.
+
+**Example 2: Start of a Talkspurt in Audio**
+- During an audio call, periods of silence may not be transmitted (using silence suppression or Voice Activity Detection).
+- When the user starts speaking again (a talkspurt), the first packet might have the Marker bit set to 1 (`M=1`), indicating the start of the new talkspurt.
+- Subsequent packets in the same talkspurt would have `M=0`.
+
+### Example in Hexadecimal
+Consider a hexadecimal representation of an RTP header:
+
+```
+80E0 0001 00000001 00000001
+```
+
+Breaking it down:
+
+- `80` in binary is `10000000`
+  - **V=2** (Version 2)
+  - **P=0** (No padding)
+  - **X=0** (No extension)
+  - **CC=0000** (No contributing sources)
+  - **M=1** (Marker bit set)
+  - **PT=1110000** (Payload type, e.g., dynamic video)
+
+- The rest of the header includes:
+  - **Sequence Number:** `0001`
+  - **Timestamp:** `00000001`
+  - **SSRC:** `00000001`
+
+In this example, the marker bit is set (`M=1`), indicating the start of something significant, such as a new video frame.
+
+### Conclusion
+The Marker bit in the RTP header is a powerful tool for signaling important events in the media stream. Its meaning is application-dependent, but it generally serves to alert the receiver to key points in the stream, like the start of a new frame or talkspurt. Understanding and correctly interpreting this bit is crucial for the proper handling of real-time data.
+
+## Payload Type (PT)
+این یک فیلد ۷-بیتی است که به گیرنده اطلاع می‌دهد فرمت داده‌های موجود در بسته چیست. این مقدار به ما عددی از کدک منبع استفاده شده برای نمونه‌ها را می‌دهد. مقادیر پایین (۰-۲۳) برای کدک‌های صوتی هستند، و مقادیر بالاتر به طور معمول برای ویدیو استفاده می‌شوند، اگرچه ممکن است نوع‌های دیگری از بارگذاری نیز وجود داشته باشد. به عنوان مثال، RFC 4733 (RFC 2833) چندین بارگذاری DTMF را با استفاده از شناسه‌های مختلف توصیف می‌کند.
+
+از مجموعه بسته‌ها در شکل ۴-۷ می‌توان مشاهده کرد که بسته‌های RTP داده‌ای را که با کدک G.729 کدگذاری شده است، حمل می‌کنند. بسته‌ای که در شکل ۴-۶ نشان داده شده است، با کدک G.711 کدگذاری شده است. RFC 3551 فهرستی از کدک‌های تعریف‌شده تا زمان نگارش آن ارائه می‌دهد. برخی از مثال‌ها از جدول ۴ RFC 3551 شامل موارد زیر است:
+
+به عنوان مثال، PT ۰ (PCMU) برای کدک G.711 است که با مدولاسیون کد پالس μ (میولار) کدگذاری می‌شود و این‌ها در هر دو جدول و بسته‌های قبلی دیده می‌شود.
+
+از جدول ۵ RFC 3551، ما لیست نوع‌های کدک ویدیویی را دریافت می‌کنیم:
+
+مشخص کردن مقدار به گیرنده اطلاعات دقیقی درباره کدک استفاده شده می‌دهد. مقادیر دیگر می‌توانند برای کدک‌های دینامیک یا تعریف‌شده توسط منبع استفاده شوند. در پایین شکل ۴-۹، مقادیر اختصاص داده‌شده به کدک‌های دینامیک را می‌توان دید. البته، استفاده از مقدار بارگذاری RTP دینامیک مانند موردی که در شکل ۴-۱۰ از یک نقطه پایانی Polycom دیده می‌شود، می‌تواند کار را برای گیرنده دشوارتر کند زیرا باید کدک را بشناسد. این همچنین به این معنی است که این اطلاعات باید قبل از شروع جریان RTP مذاکره شود.
+
+![](./image/4-8.png)
+![](./image/4-9.png)
+
+![](./image/4-10.png)
+در این مورد، نوع بارگذاری از طریق پروتکل توصیف جلسه (SDP) مذاکره شده است، که بخشی از آن در شکل ۴-۱۱ نشان داده شده است. SDP بخشی از پروتکل SIP است و مقدار دایره‌گذاری شده ۹۹ به طرف‌های درگیر اطلاع می‌دهد که باید از کدک SIREN استفاده شود. در یک توپولوژی جداگانه، این مقدار ممکن است دوباره استفاده شود اما برای یک کدک کاملاً متفاوت.
+![](./image/4-11.png)
+
+
+
+In the RTP (Real-time Transport Protocol) header, the **Payload Type (PT)** field specifies the format of the RTP payload and indicates the type of media being carried in the RTP packet. This field helps the receiver understand how to interpret and process the data in the payload.
+
+### Payload Type (PT) Field
+
+**Purpose:**
+- The Payload Type field informs the receiver about the encoding format of the media data. This could be audio or video encoding formats such as H.264 for video or G.711 for audio.
+- It helps the receiver to use the appropriate codec to decode the payload correctly.
+
+**Position:**
+- The Payload Type field is 7 bits long and is located immediately after the Marker bit in the RTP header.
+
+**Size:**
+- 7 bits (in the RTP header)
+
+### RTP Header Structure (Simplified)
+Here's a simplified view of the RTP header showing the PT field:
+
+```
+0                   1                   2                   3
+0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|V=2|P|X|  CC   |M|     PT      |       Sequence Number         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                           Timestamp                           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|           Synchronization Source (SSRC) Identifier            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|            Contributing Source (CSRC) Identifiers             | (optional)
+|                              ....                             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+```
+
+### Payload Type (PT) Field Values
+
+**Static vs. Dynamic Payload Types:**
+- **Static Payload Types:** Defined in the RTP specification or associated RFCs. For example, Payload Type 0 is often used for PCM encoding (G.711 audio).
+- **Dynamic Payload Types:** Assigned by the RTP session at runtime. These are negotiated between the sender and receiver. They are used for newer or less common codecs.
+
+**Examples:**
+
+1. **Static Payload Type Example:**
+   - **Payload Type 0:** Often used for PCMU audio (G.711 µ-law audio).
+   - **Payload Type 8:** Often used for PCMA audio (G.711 A-law audio).
+   - **Payload Type 96:** Often used for dynamic payload types assigned to video codecs like H.264.
+
+2. **Dynamic Payload Type Example:**
+   - When a video stream uses H.264 codec, the PT value might be dynamically assigned to `96`, indicating H.264 video.
+   - During an RTP session setup, the sender and receiver agree that `96` will represent H.264 video. This is negotiated through SDP (Session Description Protocol) during session establishment.
+
+### Example Scenario
+
+Suppose you are streaming video using RTP and have the following RTP header:
+
+```
+80 60 00 01 00 00 00 01
+```
+
+Breaking this down:
+
+- **80:** Represents RTP version 2, no padding, no extension, no contributing sources, Marker bit not set, Payload Type 96.
+- **Sequence Number:** 0x0001
+- **Timestamp:** 0x00000001
+- **SSRC:** 0x00000001
+
+In this case, the Payload Type field is `96`. You need to consult the session description or codec agreement to understand what `96` represents. Suppose `96` is assigned to H.264 video. Thus, this RTP packet is carrying H.264 encoded video data.
+
+### Conclusion
+
+The Payload Type (PT) field in the RTP header is crucial for identifying the format of the data payload. It helps the receiver know how to interpret the media data correctly. Static payload types are predefined and well-known, while dynamic payload types are negotiated during session setup and can represent a variety of media formats. Understanding the PT field is essential for proper RTP packet processing and media decoding.
+
+
+## Packet fields beyond the first two octets
+### Sequence numbers
+این فیلد ۲ بایتی شامل عددی است که به یک بسته خاص اشاره می‌کند و می‌تواند در شناسایی بسته‌های گم‌شده و قرار دادن بسته‌ها در ترتیب صحیح کمک کند. با این حال، باید به یاد داشته باشیم که این بسته‌ها بخشی از جریان UDP هستند و بنابراین ترتیب آنها به دقت توسط میزبان کنترل نمی‌شود. این اعداد برای هر بسته ارسال‌شده توسط همان منبع به اندازه یک واحد افزایش می‌یابند. RFC 3550 توصیه می‌کند که این اعداد از یک مقدار تصادفی شروع شوند تا پیش‌بینی آنها کمتر شود. بسته‌های نشان‌داده‌شده در شکل ۴-۵ و شکل ۴-۶ بخشی از یک مجموعه بسیار بزرگ‌تر از بسته‌های موجود در جریان صوتی هستند و شماره‌های توالی را می‌توان با نگاه کردن به آنها به‌طور مشترک دنبال کرد.
+
+برای آسان‌تر کردن این بحث، از همان سری بسته‌ها استفاده می‌کنم. به یاد داشته باشید که تماس از شماره ۱۱۱-۱۱۱۱ (۱۹۲.۱۶۸.۱۶.۲۳) به شماره ۱۱۱-۲۲۲۲ (۱۹۲.۱۶۸.۱۶.۲۴) گرفته شده است. شکل ۴-۱۲ ما را شروع می‌کند. شماره‌های توالی برای چهار بسته RTP اول با عدد تصادفی ۱۱۶۴۴ آغاز می‌شود و به ۱۱۶۴۷ پیش می‌رود. توجه داشته باشید که یک تماس صوتی شامل دو جریان یک‌طرفه است و شماره‌های توالی برای دو جریان دارای مقدار پایه متفاوتی هستند. آخرین بسته شماره توالی‌ای دارد که بخشی از جریانی است که در جهت مخالف حرکت می‌کند. همانطور که با بررسی ضبط‌های Polycom در شکل ۴-۱۳ مشاهده می‌شود، نه هر فروشنده‌ای قوانین تصادفی‌سازی را دنبال می‌کند، زیرا شماره‌های توالی در این جریان بسته خاص از صفر شروع می‌شود.
+
+![](./image/4-12.png)
+![](./image/4-13.png)
+
+## Timestamp
+زمان‌سنجی، مقدار ساعت در زمان نمونه‌برداری اولین هشت‌تایی بسته‌ها است. دقت این فیلد 32 بیتی کاملاً وابسته به ساعت است. ساعت مورد استفاده، ساعت سیستم نیست بلکه تابعی از نمونه‌برداری کدک است. نیازمندی‌ها برای ساعت بسیار سخت‌گیرانه است، زیرا در محاسبات مربوط به جریان داده، به ویژه بسته‌های داده صوتی (یا ویدیویی) و لرزش (Jitter) استفاده می‌شود. به عنوان مثال، طبق RFC 3551، یک فریم صوتی G.729 به مدت 10 میلی‌ثانیه است و شامل 80 بیت است. بسته‌بندی پیش‌فرض 20 میلی‌ثانیه است، یا دو فریم G.729 در هر بسته RTP. G.711 همیشه به صورت نمونه‌های 8 بیتی منتقل می‌شود که هرکدام معادل یک هشت‌هزارم ثانیه است. ساعت RTP بر اساس تعداد نمونه‌ها در هر ثانیه است. بنابراین، یک فریم 20 میلی‌ثانیه‌ای شامل 160 نمونه G.711 است. بررسی زمان‌سنجی‌ها برای بسته‌های مشابه، همانطور که در شکل 4-14 نشان داده شده است، نشان می‌دهد که زمان‌سنجی به تدریج افزایش می‌یابد. 
+
+صرف‌نظر از روش، بسته‌ها یا دوره‌های زمانی، اندازه تکه‌های داده باید در payload جا شود و باید بر اساس عدد صحیح هشت‌تایی‌ها تقسیم شود. زمان‌سنجی همچنین می‌تواند برای محاسبه زمان‌های ورود استفاده شود. لرزش (Jitter) میزان تغییرات در زمان ورود را اندازه‌گیری می‌کند.
+
+![](./image/4-14.png)
+
+## Synchronization Source Identifier (SSRC)
+**این فیلد یک شناسه تصادفی برای منبع جریان بلادرنگ است. این شناسه بر اساس آدرس شبکه نیست. این مقدار 4 بایتی بسته‌ها را برای پخش گروه‌بندی می‌کند. ایده این است که منابع درگیر در جریان‌های RTP مقدار یکسانی دریافت نخواهند کرد. RFC 3550 حتی یک الگوریتم نمونه را برای تولید عدد تصادفی ارائه می‌دهد. از همان لیست بسته‌ها، تمام بسته‌های مربوط به 192.168.16.23 شناسه منبع هم‌زمان‌سازی یکسانی دارند (شکل 4-15).**
+
+![](./image/4-15.png)
+![](./image/4-16.png)
+
+The **SSRC (Synchronization Source)** field in the RTP (Real-time Transport Protocol) header is a crucial component that helps identify the source of a particular RTP stream within a session. This field is used to manage and synchronize multiple RTP streams, which can be essential in scenarios such as video conferencing where multiple streams (e.g., audio and video) may be transmitted simultaneously.
+
+### SSRC Field in RTP Header
+
+**Purpose:**
+- **Unique Identification:** The SSRC field is a 32-bit identifier that uniquely identifies the source of the RTP stream within a particular RTP session. Each RTP stream should have a unique SSRC to avoid conflicts and ensure proper synchronization and processing of the media data.
+- **Stream Synchronization:** It helps in managing and synchronizing multiple streams by differentiating between various sources in the same RTP session.
+
+**Position:**
+- The SSRC field is located in the RTP header, specifically after the timestamp and before any CSRC (Contributing Source) identifiers, if present.
+
+**Size:**
+- 32 bits (4 bytes)
+
+### RTP Header Structure (Simplified)
+Here’s a simplified view of the RTP header, highlighting the SSRC field:
+
+```
+0                   1                   2                   3
+0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|V=2|P|X|  CC   |M|     PT      |       Sequence Number         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                           Timestamp                           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|           Synchronization Source (SSRC) Identifier            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|            Contributing Source (CSRC) Identifiers             | (optional)
+|                              ....                             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+```
+
+### How SSRC Works
+
+- **Uniqueness:** Each RTP stream within a session is assigned a unique SSRC value by the source. This unique identifier ensures that the receiver can distinguish between different streams from different sources.
+- **Synchronization:** SSRC is particularly useful in scenarios where multiple streams need to be synchronized, such as combining audio and video in a video conference. It helps the receiver match streams from the same source correctly.
+
+### Example Scenario
+
+Suppose you have a video conference with multiple participants, each sending audio and video streams. Each participant's device will assign a unique SSRC to its streams.
+
+1. **Participant A:**
+   - Audio Stream SSRC: `0x12345678`
+   - Video Stream SSRC: `0x87654321`
+
+2. **Participant B:**
+   - Audio Stream SSRC: `0x11223344`
+   - Video Stream SSRC: `0x44332211`
+
+Here’s how an RTP packet from Participant A’s audio stream might look:
+
+```
+80 60 00 01 00 00 00 00 12 34 56 78
+```
+
+Breaking this down:
+
+- **80:** RTP version 2, no padding, no extension, no contributing sources, Marker bit not set, Payload Type `96`.
+- **Sequence Number:** `0x0001`
+- **Timestamp:** `0x00000000`
+- **SSRC:** `0x12345678`
+
+### Handling SSRC
+
+1. **Session Management:** 
+   - In a multi-stream session, the receiver uses SSRC to differentiate between streams from different sources. This is crucial for correctly reassembling and synchronizing audio and video.
+
+2. **Conflict Resolution:**
+   - If two sources accidentally use the same SSRC, this can cause confusion. Most RTP implementations handle this by detecting and resolving conflicts, often by changing the SSRC.
+
+3. **SDP Descriptions:**
+   - The SSRC is not directly specified in SDP (Session Description Protocol) offers/answers but is dynamically assigned and included in RTP packets during the session.
+
+### Conclusion
+
+The SSRC (Synchronization Source) field in the RTP header plays a vital role in identifying and synchronizing RTP streams. By providing a unique identifier for each source, it enables the receiver to manage multiple streams effectively, ensuring proper synchronization and accurate media delivery. Understanding how SSRC works helps in setting up and troubleshooting RTP-based communication systems, especially in complex scenarios involving multiple media streams.
+
+
+## Contributing Source Identifier (CSRC)
+**اگر منابع داده دیگری در جریان RTP فعلی وجود داشته باشند، شناسه‌های آن‌ها در اینجا فهرست می‌شوند. در ابتدای این فصل، فیلد "تعداد شناسه‌های منابع مشارکت‌کننده" را مشاهده کردیم. با یک منبع، این فیلد صفر خواهد بود. منابع متعدد زمانی استفاده می‌شوند که جلسات ترکیب یا چندپخشی (multiplexing) وجود داشته باشد.**
+
+**زمانی که صدا و ویدئو از یک گره (node) واحد می‌آیند، شناسه‌های منبع هم‌زمان‌سازی مختلفی برای جلوگیری از سردرگمی بین فرمت‌های داده استفاده می‌شود. این همچنین امکان تبدیل از یک کدک به کدک دیگر را فراهم می‌کند. بنابراین، حتی اگر دو گره از طریق جریان‌های صوتی و ویدیویی از طریق یک برنامه واحد ارتباط برقرار کنند، مانند زمانی که با وب‌کم و میکروفون در اسکایپ صحبت می‌کنید، احتمالاً شناسه‌های منابع هم‌زمان‌سازی مختلفی استفاده خواهد شد.**
+
+**شکل 4-17 یک مثال را نشان می‌دهد. در شکل 4-17، بسته‌ها از یک کلاینت ویدئوکنفرانس Polycom می‌آیند و می‌بینیم که تمام این بسته‌ها از 192.168.16.112 آمده‌اند اما دو کدک مختلف استفاده می‌شود. بنابراین، دو شناسه منبع، زمان‌سنجی‌ها، و شماره‌های توالی (sequence numbers) جریان‌ها را از هم جدا می‌کنند.**
+
+![](./image/4-17.png)
+
+## RTP extension header
+**همانطور که قبلاً در این فصل اشاره شد، هدر RTP دارای یک بیت گسترش (extension) است. اگر این بیت تنظیم شود، هدر RTP به گونه‌ای گسترش می‌یابد که شامل اطلاعات مورد نیاز برنامه باشد. تنها یک هدر گسترش مجاز است. هدر گسترش از RFC 3550 در شکل 4-18 نشان داده شده است.**
+
+**با این حال، استفاده از این هدر گسترش غیرمعمول است، زیرا سند پروفایل (RFC 3551) روش‌هایی را ارائه می‌دهد که معمولاً برای دستکاری هدر بر اساس نیازهای برنامه استفاده می‌شود. در واقع، هیچ‌یک از توپولوژی‌هایی که در نوشتن این فصول استفاده شده‌اند، شامل هدر گسترش نبوده است. این به این معنا نیست که هدر ثابت RTP محدود به آنچه که تاکنون دیده‌ایم، است. اسناد دیگری مکانیزم‌های اضافی برای مدیریت سیگنال‌ها و صداهایی که ممکن است در سیستم‌های ارتباطی نیاز باشد، ارائه می‌دهند. به عنوان مثال، RFC 4733 آنچه باید برای ارسال سیگنال‌های دوپایه چندفرکانسی (DTMF) در سیستم‌های VoIP انجام شود را شرح می‌دهد. نمونه‌ای از این بسته‌بندی در شکل 4-19 نشان داده شده است.**
+
+![](./image/4-18.png)
+![](./image/4-19.png)
+
+**این بسته به RFC 2833 اشاره می‌کند که توسط RFC 4733 جایگزین شده است. RFC 4733 نحوه حمل سیگنال‌های سنتی در بسته‌های RTP را توصیف می‌کند. به عنوان مثال، به جای ارسال یک بسته به سرور تماس که شامل شماره‌ای است که باید شماره‌گیری شود، یک تلفن ممکن است صداهای DTMF را گرفته و آن‌ها را به بسته‌های RTP تبدیل کند به همان روشی که صداها ضبط می‌شوند.**
+
+The RTP (Real-time Transport Protocol) extension header is an optional part of the RTP header that allows for the inclusion of additional information beyond the standard RTP header fields. This extension mechanism provides flexibility for carrying extra data that can be useful for specific applications, quality of service (QoS) metrics, or enhanced functionality.
+
+### RTP Extension Header
+
+**Purpose:**
+- **Additional Information:** The RTP extension header enables the inclusion of extra metadata or control information that is not covered by the standard RTP header fields.
+- **Application-Specific Data:** It allows applications to insert data relevant to their specific needs, such as codec-specific parameters or synchronization information.
+
+**Position:**
+- The RTP extension header is placed immediately after the standard RTP header if the extension bit (X) is set. The presence of the extension header is indicated by the Extension (X) bit in the RTP header.
+
+**Size:**
+- The size of the RTP extension header is variable and depends on the number and size of the extension headers defined by the application.
+
+### RTP Header with Extension
+
+Here is a simplified view of the RTP header including the extension:
+
+```
+0                   1                   2                   3
+0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|V=2|P|X|  CC   |M|     PT      |       Sequence Number         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                           Timestamp                           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|           Synchronization Source (SSRC) Identifier            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|            Contributing Source (CSRC) Identifiers             | (optional)
+|                              ....                             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|              Extension Header (if X == 1)                     |
+| 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+|+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Extension Profile (16 bits) |  Extension Length (16 bits)    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      Header Extensions (variable length)                      |
+|                              ....                             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+```
+
+### Components of the RTP Extension Header
+
+1. **Extension Bit (X):**
+   - **Position:** 12th bit of the RTP header.
+   - **Purpose:** Indicates whether the RTP packet includes an extension header (`X=1`) or not (`X=0`).
+
+2. **Extension Profile:**
+   - **Size:** 16 bits.
+   - **Purpose:** Identifies the profile that defines the format and semantics of the extension header. It helps the receiver understand how to interpret the extension data.
+   - **Example:** Common profiles include the RTP Header Extension for RTP Control Protocol (RTCP) or proprietary extensions defined by specific applications.
+
+3. **Extension Length:**
+   - **Size:** 16 bits.
+   - **Purpose:** Indicates the length of the extension header in 32-bit words (excluding the 4 bytes for the profile and length fields). This tells the receiver how many 32-bit words follow the profile and length fields.
+   - **Example:** If the extension length is `2`, it means there are `2` 32-bit words of extension data.
+
+4. **Header Extensions:**
+   - **Size:** Variable.
+   - **Purpose:** Contains the actual extension data, which can vary in format and length depending on the profile and specific use case.
+
+### Example Scenario
+
+Imagine you are using RTP for a video conferencing application, and you want to include timestamp information for synchronization purposes. You decide to use an RTP extension header to include this additional metadata.
+
+Assume the extension profile is `0xBEDE` (a hypothetical profile for video synchronization), and the extension length is `2` (indicating 2 32-bit words of extension data).
+
+The RTP packet header might look like this:
+
+```
+80 60 00 01 00 00 00 01 BE DE 00 02 01 02 03 04
+```
+
+Breaking this down:
+
+- **80:** RTP version 2, no padding, extension bit set, no contributing sources, Marker bit not set, Payload Type `96`.
+- **Sequence Number:** `0x0001`
+- **Timestamp:** `0x00000001`
+- **SSRC:** `0x00000001`
+- **Extension Profile:** `0xBEDE`
+- **Extension Length:** `0x0002` (2 32-bit words of extension data)
+- **Header Extensions:** `01 02 03 04` (actual extension data)
+
+### Handling RTP Extension Headers
+
+1. **Determine Profile and Length:**
+   - Extract the profile and length fields from the extension header to interpret the extension data correctly.
+
+2. **Process Extension Data:**
+   - Use the profile information to understand the format and semantics of the extension data, which could be application-specific or standardized.
+
+3. **Configure Applications:**
+   - Ensure that both sending and receiving applications are configured to handle the specific RTP extension profiles and data formats.
+
+### Conclusion
+
+The RTP extension header provides a flexible mechanism for including additional information in RTP packets. By using the extension header, applications can transmit extra metadata or control information, enabling enhanced functionality and better synchronization. Understanding and correctly implementing RTP extensions require knowledge of the specific profiles and data formats used in the extension header.
+
+![](https://blog.jianchihu.net/wp-content/uploads/20201025161941.png)
+
