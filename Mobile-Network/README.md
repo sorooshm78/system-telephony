@@ -4,3 +4,8 @@
 ![](./2.jpg)
 ![](./gsm.png)
 ![](./2g-3g-overview.png)
+![](./2g-radio.png)
+![](./3g-radio.png)
+![](./3.jpg)
+![](./4.jpg)
+![](./5.jpg)
